@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Minecraft Java Server Installer for Proxmox LXC/VM
+# Minecraft Java Server Installer for Proxmox VM
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
@@ -8,7 +8,7 @@ set -e  # Exit script on error
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y openjdk-17-jre-headless screen wget curl jq
+sudo apt install -y openjdk-21-jre-headless screen wget curl jq unzip
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft
@@ -25,7 +25,7 @@ if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
   exit 1
 fi
 
-echo "Downloading PaperMC - Version: $LATEST_VERSION, Build: $LATEST_BUILD"
+echo "📦 Downloading PaperMC - Version: $LATEST_VERSION, Build: $LATEST_BUILD"
 wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION/builds/$LATEST_BUILD/downloads/paper-$LATEST_VERSION-$LATEST_BUILD.jar"
 
 # Accept the Minecraft EULA
@@ -36,16 +36,23 @@ cat <<EOF > start.sh
 #!/bin/bash
 java -Xms2G -Xmx4G -jar server.jar nogui
 EOF
-
 chmod +x start.sh
 
-# Ensure screen is installed before starting the server
-if ! command -v screen &> /dev/null; then
-  echo "ERROR: 'screen' is not installed. Install it with 'sudo apt install screen'."
-  exit 1
-fi
+# Create update script
+cat <<EOF > update.sh
+#!/bin/bash
+cd /opt/minecraft || exit 1
+LATEST_VERSION=\$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
+LATEST_BUILD=\$(curl -s https://api.papermc.io/v2/projects/paper/versions/\$LATEST_VERSION | jq -r '.builds | last')
 
-# Start the server in a detached screen session
+wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/\$LATEST_VERSION/builds/\$LATEST_BUILD/downloads/paper-\$LATEST_VERSION-\$LATEST_BUILD.jar"
+echo "✅ Update complete."
+EOF
+chmod +x update.sh
+
+# Start server in detached screen session
 screen -dmS minecraft ./start.sh
 
-echo "Setup complete! Use 'screen -r minecraft' to open the console."
+echo "✅ Minecraft Server setup complete!"
+echo "To access console: sudo -u $(whoami) screen -r minecraft"
+
