@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# Change to Minecraft directory
 cd /opt/minecraft || exit 1
 
-# Download latest PaperMC jar (manually specified version/build for now)
-wget -O server.jar https://api.papermc.io/v2/projects/paper/versions/1.20.4/builds/416/downloads/paper-1.20.4-416.jar
+LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
+LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION | jq -r '.builds | last')
 
-echo "✅ Update complete. Restart the server if needed."
+wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION/builds/$LATEST_BUILD/downloads/paper-$LATEST_VERSION-$LATEST_BUILD.jar"
+
+echo "✅ Update complete to version $LATEST_VERSION (build $LATEST_BUILD)"
