@@ -1,47 +1,16 @@
 #!/bin/bash
+set -e
+echo "📦 Installing base dependencies..."
+apt update -y && apt install -y curl wget screen unzip git
+echo "☕ Installing Java..."
+apt install -y openjdk-21-jre-headless || apt install -y openjdk-17-jre-headless
 
-# Minecraft Server Installer for LXC Containers on Proxmox
-# Tested on Debian 11/12 and Ubuntu 24.04
-# Author: TimInTech
+MEM_MIN=${MEM_MIN:-2G}
+MEM_MAX=${MEM_MAX:-4G}
+mkdir -p /opt/minecraft && cd /opt/minecraft
+wget -q https://api.papermc.io/v2/projects/paper/versions/1.20.1/builds/latest/downloads/paper-1.20.1-latest.jar -O server.jar
 
-# Update package lists and install required dependencies
-apt update && apt upgrade -y
-apt install -y screen wget curl jq unzip
-
-# Install Java: try OpenJDK 21 if available, fall back to OpenJDK 17.
-if ! apt install -y openjdk-21-jre-headless; then
-  echo "openjdk-21-jre-headless is not available; falling back to openjdk-17-jre-headless"
-  apt install -y openjdk-17-jre-headless
-fi
-
-# Create the Minecraft server directory
-mkdir -p /opt/minecraft && cd /opt/minecraft || exit 1
-
-# Fetch the latest PaperMC version
-LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
-
-# Validate if the version and build exist
-if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
-  echo "ERROR: Couldn't retrieve the latest PaperMC version. Check https://papermc.io/downloads"
-  exit 1
-fi
-
-echo "Downloading PaperMC Version: $LATEST_VERSION, Build: $LATEST_BUILD"
-wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION/builds/$LATEST_BUILD/downloads/paper-$LATEST_VERSION-$LATEST_BUILD.jar"
-
-# Accept the EULA
-echo "eula=true" > eula.txt
-
-# Create start script
-cat <<EOF > start.sh
-#!/bin/bash
-java -Xms2G -Xmx4G -jar server.jar nogui
-EOF
-
+echo '#!/bin/bash
+java -Xms$MEM_MIN -Xmx$MEM_MAX -jar server.jar nogui' > start.sh
 chmod +x start.sh
-
-# Start the server in a detached screen session
 screen -dmS minecraft ./start.sh
-
-echo "✅ Minecraft Server setup complete! Use 'screen -r minecraft' to access the console."
