@@ -34,7 +34,7 @@ Using this link supports the project at no additional cost to you. Thank you! �
   * Name: `Minecraft-Server`
 * **OS Selection**:
 
-  * Use a **Debian 11/12** or **Ubuntu 24.04** ISO image
+  * Use a **Ubuntu 24.04 LTS** ISO image *(empfohlen)*. Debian 11/12 können ebenfalls verwendet werden, benötigen jedoch zusätzliche Schritte für Java 21 und es wird gegebenenfalls auf Java 17 zurückgegriffen.
 * **System Configuration**:
 
   * BIOS: **OVMF (UEFI) or SeaBIOS**
@@ -56,8 +56,10 @@ Using this link supports the project at no additional cost to you. Thank you! �
 
 ```bash
 apt update && apt upgrade -y  
-apt install -y curl wget nano screen unzip git openjdk-21-jre-headless
+apt install -y curl wget nano screen unzip git
 ```
+
+> **Hinweis:** Das Setup‑Skript kümmert sich um die Java‑Installation. Auf Ubuntu 24.04 wird OpenJDK 21 installiert. Ist Java 21 nicht verfügbar (z. B. auf Debian 11/12), wird automatisch auf Java 17 zurückgegriffen. Alternativ kann das Microsoft‑OpenJDK‑Repository genutzt werden【32683142696490†L318-L331】.
 
 ### 3️⃣ Run the Minecraft Server Setup Script ⛏️
 
@@ -80,7 +82,7 @@ chmod +x setup_minecraft.sh
   * Set root user **password**
 * **Template Selection**:
 
-  * Choose a **Debian 11/12** or **Ubuntu 24.04** template
+  * Wähle ein **Ubuntu 24.04 LTS**‑Template *(empfohlen)*. Debian 11/12‑Templates werden unterstützt, verwenden aber standardmäßig Java 17, falls Java 21 nicht verfügbar ist.
 * **Resources**:
 
   * CPU: 2 vCPUs (recommended: 4)
@@ -102,8 +104,10 @@ chmod +x setup_minecraft.sh
 
 ```bash
 apt update && apt upgrade -y  
-apt install -y curl wget nano screen unzip git openjdk-21-jre-headless
+apt install -y curl wget nano screen unzip git
 ```
+
+> **Hinweis:** Das LXC‑Installationsskript installiert Java 21 auf Ubuntu 24.04. Wenn Java 21 nicht verfügbar ist (z. B. auf Debian 11/12), wird automatisch OpenJDK 17 installiert.
 
 ### 3️⃣ Run the LXC Setup Script 🛠️
 
