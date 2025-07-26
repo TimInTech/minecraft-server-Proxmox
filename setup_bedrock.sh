@@ -12,8 +12,8 @@ sudo apt install -y unzip wget screen curl
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft-bedrock
-sudo chown $(whoami):$(whoami) /opt/minecraft-bedrock
-cd /opt/minecraft-bedrock
+sudo chown "$(whoami)":"$(whoami)" /opt/minecraft-bedrock
+cd /opt/minecraft-bedrock || exit 1
 
 # Fetch the latest Bedrock server URL
 LATEST_URL=$(curl -s https://www.minecraft.net/en-us/download/server/bedrock | grep -o 'https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9.]*.zip' | head -1)
@@ -25,13 +25,10 @@ if [[ -z "$LATEST_URL" ]]; then
 fi
 
 echo "Downloading Minecraft Bedrock Server from: $LATEST_URL"
-wget -O bedrock-server.zip "$LATEST_URL"
-
-# Check if the download was successful
-if [[ $? -ne 0 ]]; then
+wget -O bedrock-server.zip "$LATEST_URL" || {
   echo "ERROR: Download failed. Check your internet connection."
   exit 1
-fi
+}
 
 # Check if the file is a valid ZIP archive
 if ! unzip -tq bedrock-server.zip >/dev/null; then
