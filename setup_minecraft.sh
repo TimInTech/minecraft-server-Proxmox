@@ -4,7 +4,7 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
-set -e  # Exit script on error
+set -euo pipefail  # Exit script on error, undefined variable, or failed pipeline
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y

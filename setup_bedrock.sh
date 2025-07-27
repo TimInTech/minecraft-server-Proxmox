@@ -4,7 +4,7 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
-set -e  # Exit on any error
+set -euo pipefail  # Exit on error, unset variable, or failed pipeline
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y

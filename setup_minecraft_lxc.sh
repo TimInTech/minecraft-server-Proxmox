@@ -4,6 +4,9 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
+
+set -euo pipefail
+
 # Update package lists and install required dependencies
 apt update && apt upgrade -y
 apt install -y screen wget curl jq unzip
