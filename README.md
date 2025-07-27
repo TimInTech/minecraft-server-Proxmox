@@ -9,18 +9,18 @@ This repository provides a guide and automated scripts to set up a **Minecraft s
 ## 🔗 Support This Project 💎
 
 If you find this guide helpful, consider purchasing through this affiliate link:
-**⛏️ [NiPoGi AK1PLUS Mini PC – Intel Alder Lake-N N100](https://amzn.to/3FvH4GX)**
+**⛏️ [NiPoGi AK1PLUS Mini PC – Intel Alder Lake‑N N100](https://amzn.to/3FvH4GX)**
 Using this link supports the project at no additional cost to you. Thank you! 🙌
 
 ---
 
 ## 📌 Features 📜
 
-✅ Automated installation of Minecraft Java/Bedrock servers
-✅ Works with Proxmox VM or LXC container
-✅ Performance optimizations included (RAM allocation, CPU prioritization)
-✅ Customizable settings (world generation, plugins, mods)
-✅ Troubleshooting guide included for common issues
+✅ Automated installation of Minecraft Java/Bedrock servers  
+✅ Works with Proxmox VM or LXC container  
+✅ Performance optimizations included (RAM allocation, CPU prioritization)  
+✅ Customizable settings (world generation, plugins, mods)  
+✅ Troubleshooting guide included for common issues  
 
 ---
 
@@ -28,64 +28,60 @@ Using this link supports the project at no additional cost to you. Thank you! �
 
 ### 1️⃣ Create a Proxmox VM 💠
 
-* Open Proxmox Web Interface → Click on **"Create VM"**
+* Open the Proxmox web interface → Click on **“Create VM”**
 * **General Settings**:
-
   * Name: `Minecraft-Server`
 * **OS Selection**:
-
-  * Use a **Debian 11/12** or **Ubuntu 24.04** ISO image
+  * Use an **Ubuntu 24.04 LTS** ISO image *(recommended)*. Debian 11/12 can also be used but require additional steps for Java 21 and will fall back to Java 17 if needed.
 * **System Configuration**:
-
-  * BIOS: **OVMF (UEFI) or SeaBIOS**
+  * BIOS: **OVMF (UEFI)** or **SeaBIOS**
   * Machine Type: **q35** (recommended)
 * **Disk & Storage**:
-
-  * **20GB+ Storage** (depending on world size)
+  * **20 GB+ storage** (depending on world size)
   * Storage Type: **`virtio`** (recommended)
 * **CPU & RAM**:
-
-  * 2 vCPUs (recommended: 4)
-  * 4GB RAM (recommended: 8GB)
+  * 2 vCPUs (recommended: 4)
+  * 4 GB RAM (recommended: 8 GB)
 * **Network**:
-
   * Model: **VirtIO**
-  * Enable **QEMU Guest Agent** after installation
+  * Enable the **QEMU Guest Agent** after installation
 
 ### 2️⃣ Install Dependencies ⚙️
 
 ```bash
-apt update && apt upgrade -y  
-apt install -y curl wget nano screen unzip git openjdk-21-jre-headless
-```
+apt update && apt upgrade -y
+apt install -y curl wget nano screen unzip git
+````
+
+> **Note:** The setup script handles the Java installation. On Ubuntu 24.04 it installs OpenJDK 21. If Java 21 is not available (e.g. on Debian 11/12) it automatically falls back to Java 17. Alternatively, you can use the Microsoft OpenJDK repository.
 
 ### 3️⃣ Run the Minecraft Server Setup Script ⛏️
 
 ```bash
-wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh  
-chmod +x setup_minecraft.sh  
+wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
+chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
 ```
 
 ---
 
-## 🛠️ Installation Guide (Proxmox LXC Container) 📆
+## 🛠️ Installation Guide (Proxmox LXC Container) 📆
 
-### 1️⃣ Create a Proxmox LXC Container 🧱️
+### 1️⃣ Create a Proxmox LXC Container 🧱️
 
-* Open Proxmox Web Interface → Click on **"Create CT"**
+* Open the Proxmox web interface → Click on **“Create CT”**
 * **General Settings**:
 
   * Name: `Minecraft-LXC`
-  * Set root user **password**
+  * Set the root user **password**
 * **Template Selection**:
 
-  * Choose a **Debian 11/12** or **Ubuntu 24.04** template
+  * Choose an **Ubuntu 24.04 LTS** template *(recommended)*. Debian 11/12 templates are supported but use Java 17 by default if Java 21 is not available.
 * **Resources**:
 
-  * CPU: 2 vCPUs (recommended: 4)
-  * RAM: 4GB (recommended: 8GB)
-  * Disk Storage: 10GB (recommended: 20GB)
+  * CPU: 2 vCPUs (recommended: 4)
+  * RAM: 4 GB (recommended: 8 GB)
+  * Disk Storage: 10 GB (recommended: 20 GB)
 * **Network Settings**:
 
   * Network Device: `eth0`
@@ -95,29 +91,31 @@ chmod +x setup_minecraft.sh
   * Firewall: Enable (optional)
 * **Advanced Settings**:
 
-  * Enable **"Nesting"** (required for Java & systemd)
-  * Disable **"Unprivileged Container"** if needed
+  * Enable **“Nesting”** (required for Java & systemd)
+  * Disable **“Unprivileged Container”** if needed
 
 ### 2️⃣ Install Required Dependencies ⚒️
 
 ```bash
-apt update && apt upgrade -y  
-apt install -y curl wget nano screen unzip git openjdk-21-jre-headless
+apt update && apt upgrade -y
+apt install -y curl wget nano screen unzip git
 ```
+
+> **Note:** The LXC installation script installs Java 21 on Ubuntu 24.04. If Java 21 is not available (e.g. on Debian 11/12) it automatically installs OpenJDK 17.
 
 ### 3️⃣ Run the LXC Setup Script 🛠️
 
 ```bash
-wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh  
-chmod +x setup_minecraft_lxc.sh  
+wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh
+chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
 ```
 
 ---
 
-## 🔧 Post-Installation Notes
+## 🔧 Post‑Installation Notes
 
-### ✅ Can I install this as a non-root user?
+### ✅ Can I install this as a non‑root user?
 
 Yes – root is only needed during setup (e.g. to create the `minecraft` user). After installation, all operations (start, stop, update) can and should be done as the `minecraft` user.
 
@@ -143,7 +141,7 @@ cd /opt/minecraft
 sudo -u minecraft ./update.sh
 ```
 
-If it's missing:
+If it’s missing:
 
 ```bash
 sudo nano /opt/minecraft/update.sh

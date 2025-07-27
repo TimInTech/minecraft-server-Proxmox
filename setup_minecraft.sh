@@ -8,7 +8,13 @@ set -e  # Exit script on error
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y openjdk-21-jre-headless screen wget curl jq unzip
+sudo apt install -y screen wget curl jq unzip
+
+# Install Java: attempt to install OpenJDK 21 if available, otherwise fall back to OpenJDK 17.
+if ! sudo apt install -y openjdk-21-jre-headless; then
+  echo "openjdk-21-jre-headless is not available; falling back to openjdk-17-jre-headless"
+  sudo apt install -y openjdk-17-jre-headless
+fi
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft

@@ -6,7 +6,13 @@
 
 # Update package lists and install required dependencies
 apt update && apt upgrade -y
-apt install -y openjdk-21-jre-headless screen wget curl jq unzip
+apt install -y screen wget curl jq unzip
+
+# Install Java: try OpenJDK 21 if available, fall back to OpenJDK 17.
+if ! apt install -y openjdk-21-jre-headless; then
+  echo "openjdk-21-jre-headless is not available; falling back to openjdk-17-jre-headless"
+  apt install -y openjdk-17-jre-headless
+fi
 
 # Create the Minecraft server directory
 mkdir -p /opt/minecraft && cd /opt/minecraft
