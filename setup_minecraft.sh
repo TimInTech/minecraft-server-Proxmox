@@ -4,7 +4,7 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
-set -e  # Exit script on error
+set -euo pipefail  # Exit script on error, undefined variable, or failed pipeline
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y
@@ -18,12 +18,12 @@ fi
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft
-sudo chown $(whoami):$(whoami) /opt/minecraft
+sudo chown "$(whoami)":"$(whoami)" /opt/minecraft
 cd /opt/minecraft
 
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION | jq -r '.builds | last')
+LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
 
 # Validate if version and build numbers were retrieved
 if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then

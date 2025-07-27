@@ -4,7 +4,7 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
-set -e  # Exit on any error
+set -euo pipefail  # Exit on error, unset variable, or failed pipeline
 
 # Install required dependencies
 sudo apt update && sudo apt upgrade -y
@@ -12,7 +12,7 @@ sudo apt install -y unzip wget screen curl
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft-bedrock
-sudo chown $(whoami):$(whoami) /opt/minecraft-bedrock
+sudo chown "$(whoami)":"$(whoami)" /opt/minecraft-bedrock
 cd /opt/minecraft-bedrock
 
 # Fetch the latest Bedrock server URL
@@ -25,10 +25,7 @@ if [[ -z "$LATEST_URL" ]]; then
 fi
 
 echo "Downloading Minecraft Bedrock Server from: $LATEST_URL"
-wget -O bedrock-server.zip "$LATEST_URL"
-
-# Check if the download was successful
-if [[ $? -ne 0 ]]; then
+if ! wget -O bedrock-server.zip "$LATEST_URL"; then
   echo "ERROR: Download failed. Check your internet connection."
   exit 1
 fi

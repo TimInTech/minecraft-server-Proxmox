@@ -4,6 +4,9 @@
 # Tested on Debian 11/12 and Ubuntu 24.04
 # Author: TimInTech
 
+
+set -euo pipefail
+
 # Update package lists and install required dependencies
 apt update && apt upgrade -y
 apt install -y screen wget curl jq unzip
@@ -15,11 +18,11 @@ if ! apt install -y openjdk-21-jre-headless; then
 fi
 
 # Create the Minecraft server directory
-mkdir -p /opt/minecraft && cd /opt/minecraft
+mkdir -p /opt/minecraft && cd /opt/minecraft || exit
 
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION | jq -r '.builds | last')
+LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
 
 # Validate if the version and build exist
 if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
