@@ -2,58 +2,90 @@
 
 ![⛏️ Minecraft Server Setup](https://github.com/TimInTech/minecraft-server-Proxmox/blob/main/minecraft-setup.png?raw=true)
 
-This repository provides a guide and automated scripts to set up a **Minecraft server** on **Proxmox** using either a **Virtual Machine (VM)** or an **LXC container**.
+Welcome to the ultimate setup guide for running a **Minecraft server** on your **Proxmox host**, whether using a **Virtual Machine (VM)** or a **Lightweight Container (LXC)**. This project provides fully automated scripts, performance tuning, and a modular approach to simplify your server deployment.
+
+---
+
+## 📚 Inhaltsverzeichnis
+
+* [🧱 Minecraft Server on Proxmox 🌍](#-minecraft-server-on-proxmox-)
+* [🔗 Support This Project 💎](#-support-this-project-)
+* [📌 Features 📜](#-features-)
+* [💎 Installation Guide (Proxmox VM) 🧰](#-installation-guide-proxmox-vm-)
+
+  * [1️⃣ Create a Proxmox VM 🖥️](#-1️-create-a-proxmox-vm-)
+  * [2️⃣ Install Dependencies ⚙️](#-2️-install-dependencies-)
+  * [3️⃣ Run the Minecraft Server Setup Script ⛏️](#-3️-run-the-minecraft-server-setup-script-)
+* [🛠️ Installation Guide (Proxmox LXC Container) 📦](#-installation-guide-proxmox-lxc-container-)
+
+  * [1️⃣ Create a Proxmox LXC Container 📤](#-1️-create-a-proxmox-lxc-container-)
+  * [2️⃣ Install Required Dependencies 🔩](#-2️-install-required-dependencies-)
+  * [3️⃣ Run the LXC Setup Script ⚡](#-3️-run-the-lxc-setup-script-)
+* [🔧 Post‑Installation Notes](#-postinstallation-notes)
+* [🎮 Server Control & Admin Commands 📘](#-server-control--admin-commands-)
+* [🔍 Troubleshooting & Solutions 🚩](#-troubleshooting--solutions-)
+* [🤝 Contribute 🌟](#-contribute-)
+* [📃 Inspiration & References](#-inspiration--references)
+
+---
 
 ---
 
 ## 🔗 Support This Project 💎
 
-If you find this guide helpful, consider purchasing through this affiliate link:
+If this guide was helpful or saved you time, consider supporting its development by using the affiliate link below:
+
 **⛏️ [NiPoGi AK1PLUS Mini PC – Intel Alder Lake‑N N100](https://amzn.to/3FvH4GX)**
-Using this link supports the project at no additional cost to you. Thank you! 🙌
+
+Your support helps keep this project active and free to use — at no extra cost to you. Thank you for contributing! 🙌
 
 ---
 
 ## 📌 Features 📜
 
-✅ Automated installation of Minecraft Java/Bedrock servers  
-✅ Works with Proxmox VM or LXC container  
-✅ Performance optimizations included (RAM allocation, CPU prioritization)  
-✅ Customizable settings (world generation, plugins, mods)  
-✅ Troubleshooting guide included for common issues  
+✅ Automated setup for Minecraft Java & Bedrock servers
+✅ Runs on both VMs and LXC containers in Proxmox
+✅ Performance-tuned (RAM allocation, CPU priority)
+✅ Easy customization (worlds, mods, plugins)
+✅ Integrated troubleshooting and update instructions
 
 ---
 
-## 💎 Installation Guide (Proxmox VM) 🖥️
+## 💎 Installation Guide (Proxmox VM) 🧰
 
-### 1️⃣ Create a Proxmox VM 💠
+### 1️⃣ Create a Proxmox VM 🖥️
 
-* Open the Proxmox web interface → Click on **“Create VM”**
-* **General Settings**:
-  * Name: `Minecraft-Server`
-* **OS Selection**:
-  * Use an **Ubuntu 24.04 LTS** ISO image *(recommended)*. Debian 11/12 can also be used but require additional steps for Java 21 and will fall back to Java 17 if needed.
-* **System Configuration**:
-  * BIOS: **OVMF (UEFI)** or **SeaBIOS**
-  * Machine Type: **q35** (recommended)
-* **Disk & Storage**:
-  * **20 GB+ storage** (depending on world size)
-  * Storage Type: **`virtio`** (recommended)
-* **CPU & RAM**:
-  * 2 vCPUs (recommended: 4)
-  * 4 GB RAM (recommended: 8 GB)
-* **Network**:
-  * Model: **VirtIO**
-  * Enable the **QEMU Guest Agent** after installation
+1. Open the Proxmox web interface → Click **“Create VM”**
+2. **General Settings**:
+
+   * Name: `Minecraft-Server`
+3. **OS Selection**:
+
+   * Choose **Ubuntu 24.04 LTS** *(recommended)* or **Debian 11/12** (requires Java fallback)
+4. **System Configuration**:
+
+   * BIOS: **OVMF (UEFI)** or **SeaBIOS**
+   * Machine: **q35** (recommended)
+5. **Disk & Storage**:
+
+   * At least **20 GB** (more for large worlds)
+6. **CPU & RAM**:
+
+   * CPU: **2–4 vCPUs**
+   * RAM: **4–8 GB**
+7. **Network**:
+
+   * Model: **VirtIO**
+   * Enable the **QEMU Guest Agent**
 
 ### 2️⃣ Install Dependencies ⚙️
 
 ```bash
 apt update && apt upgrade -y
 apt install -y curl wget nano screen unzip git
-````
+```
 
-> **Note:** The setup script handles the Java installation. On Ubuntu 24.04 it installs OpenJDK 21. If Java 21 is not available (e.g. on Debian 11/12) it automatically falls back to Java 17. Alternatively, you can use the Microsoft OpenJDK repository.
+> On Ubuntu 24.04, Java 21 is installed. On Debian 11/12, the script gracefully falls back to Java 17.
 
 ### 3️⃣ Run the Minecraft Server Setup Script ⛏️
 
@@ -65,45 +97,39 @@ chmod +x setup_minecraft.sh
 
 ---
 
-## 🛠️ Installation Guide (Proxmox LXC Container) 📆
+## 🛠️ Installation Guide (Proxmox LXC Container) 📦
 
-### 1️⃣ Create a Proxmox LXC Container 🧱️
+### 1️⃣ Create a Proxmox LXC Container 📤
 
-* Open the Proxmox web interface → Click on **“Create CT”**
-* **General Settings**:
+1. In the Proxmox interface → Click **“Create CT”**
+2. **General Settings**:
 
-  * Name: `Minecraft-LXC`
-  * Set the root user **password**
-* **Template Selection**:
+   * Name: `Minecraft-LXC`
+   * Set a root password
+3. **Template**:
 
-  * Choose an **Ubuntu 24.04 LTS** template *(recommended)*. Debian 11/12 templates are supported but use Java 17 by default if Java 21 is not available.
-* **Resources**:
+   * Recommended: **Ubuntu 24.04 LTS**
+4. **Resources**:
 
-  * CPU: 2 vCPUs (recommended: 4)
-  * RAM: 4 GB (recommended: 8 GB)
-  * Disk Storage: 10 GB (recommended: 20 GB)
-* **Network Settings**:
+   * CPU: **2–4 vCPUs**
+   * RAM: **4–8 GB**
+   * Disk: **10–20 GB**
+5. **Network**:
 
-  * Network Device: `eth0`
-  * Bridge: `vmbr0` *(adjust as needed)*
-  * IPv4: Static (e.g. `192.168.0.222/24`)
-  * Gateway (IPv4): typically `192.168.0.1`
-  * Firewall: Enable (optional)
-* **Advanced Settings**:
+   * Bridge: `vmbr0`
+6. **Advanced Settings**:
 
-  * Enable **“Nesting”** (required for Java & systemd)
-  * Disable **“Unprivileged Container”** if needed
+   * Enable **Nesting**
+   * Optionally disable **Unprivileged Container**
 
-### 2️⃣ Install Required Dependencies ⚒️
+### 2️⃣ Install Required Dependencies 🔩
 
 ```bash
 apt update && apt upgrade -y
 apt install -y curl wget nano screen unzip git
 ```
 
-> **Note:** The LXC installation script installs Java 21 on Ubuntu 24.04. If Java 21 is not available (e.g. on Debian 11/12) it automatically installs OpenJDK 17.
-
-### 3️⃣ Run the LXC Setup Script 🛠️
+### 3️⃣ Run the LXC Setup Script ⚡
 
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh
@@ -115,11 +141,11 @@ chmod +x setup_minecraft_lxc.sh
 
 ## 🔧 Post‑Installation Notes
 
-### ✅ Can I install this as a non‑root user?
+### ✅ Can I use a non‑root user?
 
-Yes – root is only needed during setup (e.g. to create the `minecraft` user). After installation, all operations (start, stop, update) can and should be done as the `minecraft` user.
+Yes. After setup, switch to the `minecraft` user to run the server securely.
 
-### 🎮 How do I access the Minecraft console?
+### 🎮 Access the Minecraft console:
 
 ```bash
 sudo -u minecraft screen -r
@@ -132,43 +158,40 @@ sudo -u minecraft screen -ls
 sudo -u minecraft bash /opt/minecraft/start.sh
 ```
 
-### 🔄 How do I update the server?
+### 🔄 Update the server:
 
-#### Java Edition:
+**Java Edition:**
 
 ```bash
 cd /opt/minecraft
 sudo -u minecraft ./update.sh
 ```
 
-If it’s missing:
+**Bedrock Edition:**
+Manual update needed – download `.zip` from Mojang and replace the existing one.
 
-```bash
-sudo nano /opt/minecraft/update.sh
-```
+---
 
-Paste:
+## 🎮 Server Control & Admin Commands 📘
 
-```bash
-#!/bin/bash
-wget -O server.jar https://api.papermc.io/v2/projects/paper/versions/1.20.4/builds/416/downloads/paper-1.20.4-416.jar
-```
+Looking for admin tips, console commands, and how to OP players?
 
-Then:
+👉 [**📘 Minecraft Server Control – Commands & Admin Guide (LXC/VM)**](SERVER_COMMANDS.md)
 
-```bash
-sudo chmod +x /opt/minecraft/update.sh
-```
+Includes:
 
-#### Bedrock Edition:
-
-Manual update required – download the latest `.zip` from the official site and replace the old one. *(Due to licensing restrictions, automatic download is not included.)*
+* Start/stop/update routines for Java & Bedrock
+* `start.sh` RAM tuning examples
+* `screen` command usage
+* Admin OP handling + `ops.json`
+* Command block tricks
+* Bedrock-specific quirks
 
 ---
 
 ## 🔍 Troubleshooting & Solutions 🚩
 
-### 1️⃣ Java Version Error
+### 1️⃣ Java not found or wrong version
 
 ```bash
 apt install -y openjdk-21-jre-headless
@@ -196,7 +219,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-### 3️⃣ Firewall (UFW) Setup
+### 3️⃣ Firewall Setup (UFW)
 
 ```bash
 ufw allow 25565/tcp
@@ -208,7 +231,19 @@ ufw enable
 
 ## 🤝 Contribute 🌟
 
-* Found a bug? 🐛 [Open an Issue](https://github.com/TimInTech/minecraft-server-Proxmox/issues)
-* Want to improve the script? ⚙️ Submit a Pull Request
+Have a suggestion or want to report a bug?
 
-💎 **Happy crafting!** 🎮
+* 🐞 [Open an Issue](https://github.com/TimInTech/minecraft-server-Proxmox/issues)
+* ⚙️ Submit a Pull Request
+
+💎 **Happy crafting and thanks for supporting open source!** 🎮
+
+---
+
+## 📃 Inspiration & References
+
+* [PaperMC API](https://papermc.io/)
+* [Mojang Bedrock Downloads](https://www.minecraft.net/en-us/download/server/bedrock)
+* [Proxmox Community & Documentation](https://pve.proxmox.com/wiki/Main_Page)
+
+---
