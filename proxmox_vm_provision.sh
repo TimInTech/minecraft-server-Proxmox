@@ -62,6 +62,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# --- normalize snippets store default and log it ---
+: "${SNIPPETS_STORE:=${STORAGE}}"
+info "Snippets store: ${SNIPPETS_STORE}"
+
 [[ -n "${VMID}" ]]   || err "--vmid is required"
 [[ -n "${VMNAME}" ]] || err "--name is required"
 [[ -f "${SSH_KEY}" ]]|| err "SSH key not found: ${SSH_KEY}"
@@ -72,9 +76,15 @@ need qm; need pvesm; need wget; need timeout
 pvesm status >/dev/null || err "pvesm not working"
 pvesm status | awk '{print $1}' | grep -qx "${STORAGE}" || err "Storage '${STORAGE}' not found"
 pvesm status | awk '{print $1}' | grep -qx "${SNIPPETS_STORE}" || err "Snippets store '${SNIPPETS_STORE}' not found"
-if ! pvesm status --verbose 2>/dev/null | awk -v s="${SNIPPETS_STORE}" '$1==s && /content:.*snippets/ {f=1} END{exit f?0:1}'; then
-  err "Storage '${SNIPPETS_STORE}' does not support snippets"
+
+if ! pvesm status | awk '{print }' | grep -qx ""; then
+  err "Snippets store '' not found"
 fi
+
+if ! pvesm config "" 2>/dev/null | grep -qE '(^|[[:space:]])content.*snippets'; then
+  err "Storage '' does not support snippets"
+fi
+
 ! qm status "${VMID}" &>/dev/null || err "VMID ${VMID} already exists"
 
 if [[ -z "${IMAGE_URL}" ]]; then
