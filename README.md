@@ -1,93 +1,62 @@
-# 🧱️ Minecraft Server on Proxmox 🌍
+<p align="center">
+  <img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
+</p>
 
-![⛏️ Minecraft Server Setup](https://github.com/TimInTech/minecraft-server-Proxmox/blob/main/minecraft-setup.png?raw=true)
+<p align="center">
+  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow"></a>
+  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/fork"><img alt="GitHub Forks" src="https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat"></a>
+  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat"></a>
+</p>
 
-Welcome to the ultimate setup guide for running a **Minecraft server** on your **Proxmox host**, whether using a **Virtual Machine (VM)** or a **Lightweight Container (LXC)**. This project provides fully automated scripts, performance tuning, and a modular approach to simplify your server deployment.
+# Minecraft Server on Proxmox
 
----
+Run a Minecraft server on your Proxmox host in minutes. Supports Java and Bedrock on both Virtual Machines (VM) and Containers (LXC/CT).
 
-## 📚 Inhaltsverzeichnis
+## Table of Contents
 
-* [🧱 Minecraft Server on Proxmox 🌍](#-minecraft-server-on-proxmox-)
-* [🔗 Support This Project 💎](#-support-this-project-)
-* [📌 Features 📜](#-features-)
-* [💎 Installation Guide (Proxmox VM) 🧰](#-installation-guide-proxmox-vm-)
+- [Features](#features)
+- [Quickstart](#quickstart)
+  - [VM (DHCP)](#vm-dhcp)
+  - [VM (Static IP)](#vm-static-ip)
+  - [LXC/CT](#lxct)
+  - [Bedrock](#bedrock)
+- [Backups](#backups)
+- [Auto-Update](#auto-update)
+- [Configuration](#configuration)
+- [Admin/Commands](#admincommands)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [References](#references)
 
-  * [1️⃣ Create a Proxmox VM 🖥️](#-1️-create-a-proxmox-vm-)
-  * [2️⃣ Install Dependencies ⚙️](#-2️-install-dependencies-)
-  * [3️⃣ Run the Minecraft Server Setup Script ⛏️](#-3️-run-the-minecraft-server-setup-script-)
-* [🛠️ Installation Guide (Proxmox LXC Container) 📦](#-installation-guide-proxmox-lxc-container-)
+## 🧩 Features
 
-  * [1️⃣ Create a Proxmox LXC Container 📤](#-1️-create-a-proxmox-lxc-container-)
-  * [2️⃣ Install Required Dependencies 🔩](#-2️-install-required-dependencies-)
-  * [3️⃣ Run the LXC Setup Script ⚡](#-3️-run-the-lxc-setup-script-)
-* [🔧 Post‑Installation Notes](#-postinstallation-notes)
-* [🎮 Server Control & Admin Commands 📘](#-server-control--admin-commands-)
-* [🔍 Troubleshooting & Solutions 🚩](#-troubleshooting--solutions-)
-* [🤝 Contribute 🌟](#-contribute-)
-* [📃 Inspiration & References](#-inspiration--references)
+- VM/CT provisioning with clear steps for Proxmox
+- Java and Bedrock installers
+- Auto-update for Java via `update.sh`
+- Backups with systemd timers or cron
+- Sensible defaults: EULA, `screen`, memory flags
+- Optional `systemd` service for auto-start
 
----
+> [!TIP]
+> Default ports: Java 25565/TCP, Bedrock 19132/UDP. Open these on your firewall/router.
 
----
+## 🏗️ Architecture Overview
 
-## 🔗 Support This Project 💎
+<p align="center">
+  <img src="assets/diagram.png" alt="Architecture overview diagram" />
+  <br />
+  <i>High-level layout: Proxmox → VM/CT → Minecraft (Java/Bedrock) with backup/update hooks.</i>
+  </p>
 
-If this guide was helpful or saved you time, consider supporting its development by using the affiliate link below:
+## 🚀 Quickstart
 
-**⛏️ [NiPoGi AK1PLUS Mini PC – Intel Alder Lake‑N N100](https://amzn.to/3FvH4GX)**
+Requirements: Proxmox host, Ubuntu 24.04 LTS (recommended) or Debian 11/12 guest.
 
-Your support helps keep this project active and free to use — at no extra cost to you. Thank you for contributing! 🙌
+### VM (DHCP)
 
----
-
-## 📌 Features 📜
-
-✅ Automated setup for Minecraft Java & Bedrock servers
-✅ Runs on both VMs and LXC containers in Proxmox
-✅ Performance-tuned (RAM allocation, CPU priority)
-✅ Easy customization (worlds, mods, plugins)
-✅ Integrated troubleshooting and update instructions
-
----
-
-## 💎 Installation Guide (Proxmox VM) 🧰
-
-### 1️⃣ Create a Proxmox VM 🖥️
-
-1. Open the Proxmox web interface → Click **“Create VM”**
-2. **General Settings**:
-
-   * Name: `Minecraft-Server`
-3. **OS Selection**:
-
-   * Choose **Ubuntu 24.04 LTS** *(recommended)* or **Debian 11/12** (requires Java fallback)
-4. **System Configuration**:
-
-   * BIOS: **OVMF (UEFI)** or **SeaBIOS**
-   * Machine: **q35** (recommended)
-5. **Disk & Storage**:
-
-   * At least **20 GB** (more for large worlds)
-6. **CPU & RAM**:
-
-   * CPU: **2–4 vCPUs**
-   * RAM: **4–8 GB**
-7. **Network**:
-
-   * Model: **VirtIO**
-   * Enable the **QEMU Guest Agent**
-
-### 2️⃣ Install Dependencies ⚙️
-
-```bash
-apt update && apt upgrade -y
-apt install -y curl wget nano screen unzip git
-```
-
-> On Ubuntu 24.04, Java 21 is installed. On Debian 11/12, the script gracefully falls back to Java 17.
-
-### 3️⃣ Run the Minecraft Server Setup Script ⛏️
+1) Create a VM (2–4 vCPU, 4–8 GB RAM, 20+ GB disk).
+2) SSH into the VM and run:
 
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
@@ -95,41 +64,43 @@ chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
 ```
 
----
-
-## 🛠️ Installation Guide (Proxmox LXC Container) 📦
-
-### 1️⃣ Create a Proxmox LXC Container 📤
-
-1. In the Proxmox interface → Click **“Create CT”**
-2. **General Settings**:
-
-   * Name: `Minecraft-LXC`
-   * Set a root password
-3. **Template**:
-
-   * Recommended: **Ubuntu 24.04 LTS**
-4. **Resources**:
-
-   * CPU: **2–4 vCPUs**
-   * RAM: **4–8 GB**
-   * Disk: **10–20 GB**
-5. **Network**:
-
-   * Bridge: `vmbr0`
-6. **Advanced Settings**:
-
-   * Enable **Nesting**
-   * Optionally disable **Unprivileged Container**
-
-### 2️⃣ Install Required Dependencies 🔩
+Access console:
 
 ```bash
-apt update && apt upgrade -y
-apt install -y curl wget nano screen unzip git
+screen -r minecraft
 ```
 
-### 3️⃣ Run the LXC Setup Script ⚡
+> [!TIP]
+> On Debian 11/12, the installer falls back to OpenJDK 17 if Java 21 isn’t available.
+
+### VM (Static IP)
+
+If you prefer static networking (Ubuntu netplan example):
+
+```bash
+sudo tee /etc/netplan/01-mc.yaml >/dev/null <<'YAML'
+network:
+  version: 2
+  ethernets:
+    ens18:
+      addresses: [192.168.1.50/24]
+      routes:
+        - to: default
+          via: 192.168.1.1
+      nameservers:
+        addresses: [1.1.1.1,8.8.8.8]
+YAML
+sudo netplan apply
+```
+
+Then install as in DHCP.
+
+> [!WARNING]
+> Use the correct interface name (e.g., `ens18`, `eth0`) and network details for your environment.
+
+### LXC/CT
+
+Create a container (Ubuntu 24.04 template recommended). Enable Nesting if needed. Inside the container:
 
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh
@@ -137,113 +108,174 @@ chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
 ```
 
----
-
-## 🔧 Post‑Installation Notes
-
-### ✅ Can I use a non‑root user?
-
-Yes. After setup, switch to the `minecraft` user to run the server securely.
-
-### 🎮 Access the Minecraft console:
+Access console:
 
 ```bash
-sudo -u minecraft screen -r
+screen -r minecraft
 ```
 
-If needed:
+### Bedrock
+
+VM or LXC/CT:
 
 ```bash
-sudo -u minecraft screen -ls
-sudo -u minecraft bash /opt/minecraft/start.sh
+wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_bedrock.sh
+chmod +x setup_bedrock.sh
+./setup_bedrock.sh
 ```
 
-### 🔄 Update the server:
+Access console:
 
-**Java Edition:**
+```bash
+screen -r bedrock
+```
+
+## 🗃️ Backups
+
+Back up worlds and server files before updates. Choose systemd or cron.
+
+### Option A: systemd (Java/Bedrock)
+
+Configuration file (used by the service):
+
+```bash
+sudo tee /etc/mc_backup.conf >/dev/null <<'EOF'
+# Directories
+MC_SRC_DIR=/opt/minecraft
+MC_BEDROCK_DIR=/opt/minecraft-bedrock
+BACKUP_DIR=/var/backups/minecraft
+# Retention (days) for optional cleanup logic (manual step)
+RETAIN_DAYS=7
+EOF
+```
+
+Backup service and timer:
+
+```bash
+sudo tee /etc/systemd/system/mc-backup.service >/dev/null <<'EOF'
+[Unit]
+Description=Minecraft backup (tar)
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/mc_backup.conf
+ExecStart=/bin/mkdir -p "${BACKUP_DIR}"
+ExecStart=/bin/bash -c 'tar -czf "${BACKUP_DIR}/java-$(date +%%F).tar.gz" "${MC_SRC_DIR}"'
+ExecStart=/bin/bash -c '[ -d "${MC_BEDROCK_DIR}" ] && tar -czf "${BACKUP_DIR}/bedrock-$(date +%%F).tar.gz" "${MC_BEDROCK_DIR}" || true'
+EOF
+
+sudo tee /etc/systemd/system/mc-backup.timer >/dev/null <<'EOF'
+[Unit]
+Description=Nightly Minecraft backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now mc-backup.timer
+```
+
+Run on demand:
+
+```bash
+sudo systemctl start mc-backup.service
+```
+
+### Option B: cron
+
+Nightly backups (note escaped `%` in cron):
+
+```bash
+crontab -e
+30 3 * * * tar -czf /var/backups/minecraft/mc-$(date +\%F).tar.gz /opt/minecraft
+```
+
+Bedrock example:
+
+```bash
+crontab -e
+45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
+```
+
+## ♻️ Auto-Update
+
+Java edition ships with `/opt/minecraft/update.sh`:
 
 ```bash
 cd /opt/minecraft
-sudo -u minecraft ./update.sh
+./update.sh
 ```
 
-**Bedrock Edition:**
-Manual update needed – download `.zip` from Mojang and replace the existing one.
-
----
-
-## 🎮 Server Control & Admin Commands 📘
-
-Looking for admin tips, console commands, and how to OP players?
-
-👉 [**📘 Minecraft Server Control – Commands & Admin Guide (LXC/VM)**](SERVER_COMMANDS.md)
-
-Includes:
-
-* Start/stop/update routines for Java & Bedrock
-* `start.sh` RAM tuning examples
-* `screen` command usage
-* Admin OP handling + `ops.json`
-* Command block tricks
-* Bedrock-specific quirks
-
----
-
-## 🔍 Troubleshooting & Solutions 🚩
-
-### 1️⃣ Java not found or wrong version
+Weekly cron:
 
 ```bash
-apt install -y openjdk-21-jre-headless
-systemctl restart minecraft
+crontab -e
+0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
 
-### 2️⃣ Missing `start.sh`
+> [!NOTE]
+> Bedrock requires a manual download from Mojang. See `bedrock_helper.sh` for a reminder message.
 
-```bash
-cd /opt/minecraft
-nano start.sh
-```
+## ⚙️ Configuration
 
-Paste:
+### `/etc/mc_backup.conf`
+
+- `MC_SRC_DIR`: Java server path (default `/opt/minecraft`)
+- `MC_BEDROCK_DIR`: Bedrock server path (default `/opt/minecraft-bedrock`)
+- `BACKUP_DIR`: Backup target directory (default `/var/backups/minecraft`)
+- `RETAIN_DAYS`: Days to keep backups (manual cleanup policy)
+
+### JVM memory (Java)
+
+Edit `/opt/minecraft/start.sh`:
 
 ```bash
 #!/bin/bash
 java -Xms2G -Xmx4G -jar server.jar nogui
 ```
 
-Then:
+Small: `-Xms1G -Xmx2G`, Medium: `-Xms2G -Xmx4G`.
+
+### Firewall
 
 ```bash
-chmod +x start.sh
-./start.sh
+sudo ufw allow 25565/tcp    # Java
+sudo ufw allow 19132/udp    # Bedrock
+sudo ufw enable
 ```
 
-### 3️⃣ Firewall Setup (UFW)
+### Optional: systemd service (Java)
+
+Use `minecraft.service`:
 
 ```bash
-ufw allow 25565/tcp
-ufw allow 25565/tcp6
-ufw enable
+sudo cp minecraft.service /etc/systemd/system/minecraft.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now minecraft
 ```
 
----
+## 🕹️ Admin/Commands
 
-## 🤝 Contribute 🌟
+See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage, and common commands.
 
-Have a suggestion or want to report a bug?
+## 🔧 Troubleshooting
 
-* 🐞 [Open an Issue](https://github.com/TimInTech/minecraft-server-Proxmox/issues)
-* ⚙️ Submit a Pull Request
+- Java 21 unavailable on Debian 11 → falls back to OpenJDK 17.
+- Missing `start.sh` → recreate as shown and `chmod +x start.sh`.
+- Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
-💎 **Happy crafting and thanks for supporting open source!** 🎮
+## 🤝 Contributing
 
----
+- [Open an issue](../../issues)
+- Submit a Pull Request
 
-## 📃 Inspiration & References
+## 📚 References
 
-* [PaperMC API](https://papermc.io/)
-* [Mojang Bedrock Downloads](https://www.minecraft.net/en-us/download/server/bedrock)
-* [Proxmox Community & Documentation](https://pve.proxmox.com/wiki/Main_Page)
-
----
+- PaperMC: https://papermc.io/
+- Mojang Bedrock Downloads: https://www.minecraft.net/en-us/download/server/bedrock
+- Proxmox Docs: https://pve.proxmox.com/wiki/Main_Page
