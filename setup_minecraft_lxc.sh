@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Minecraft Server Installer for LXC Containers on Proxmox
 # Tested on Debian 11/12 and Ubuntu 24.04
@@ -18,7 +18,7 @@ if ! apt install -y openjdk-21-jre-headless; then
 fi
 
 # Create the Minecraft server directory
-mkdir -p /opt/minecraft && cd /opt/minecraft || exit
+mkdir -p /opt/minecraft && cd /opt/minecraft || exit 1
 
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')

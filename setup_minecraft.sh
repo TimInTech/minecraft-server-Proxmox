@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Minecraft Java Server Installer for Proxmox VM
 # Tested on Debian 11/12 and Ubuntu 24.04
@@ -19,7 +19,7 @@ fi
 # Set up server directory
 sudo mkdir -p /opt/minecraft
 sudo chown "$(whoami)":"$(whoami)" /opt/minecraft
-cd /opt/minecraft
+cd /opt/minecraft || exit 1
 
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
@@ -61,4 +61,3 @@ screen -dmS minecraft ./start.sh
 
 echo "✅ Minecraft Server setup complete!"
 echo "To access console: sudo -u $(whoami) screen -r minecraft"
-
