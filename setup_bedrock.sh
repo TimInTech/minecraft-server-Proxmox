@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Minecraft Bedrock Server Installer for Proxmox LXC/VM
 # Tested on Debian 11/12 and Ubuntu 24.04
@@ -13,7 +13,7 @@ sudo apt install -y unzip wget screen curl
 # Set up server directory
 sudo mkdir -p /opt/minecraft-bedrock
 sudo chown "$(whoami)":"$(whoami)" /opt/minecraft-bedrock
-cd /opt/minecraft-bedrock
+cd /opt/minecraft-bedrock || exit 1
 
 # Fetch the latest Bedrock server URL
 LATEST_URL=$(curl -s https://www.minecraft.net/en-us/download/server/bedrock | grep -o 'https://minecraft.azureedge.net/bin-linux/bedrock-server-[0-9.]*.zip' | head -1)
@@ -56,7 +56,7 @@ EOF
 chmod +x start.sh
 
 # Ensure screen is installed before starting the server
-if ! command -v screen &> /dev/null; then
+if ! command -v screen >/dev/null 2>&1; then
   echo "ERROR: 'screen' is not installed. Install it with 'sudo apt install screen'."
   exit 1
 fi
