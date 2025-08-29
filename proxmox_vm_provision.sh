@@ -68,7 +68,7 @@ info "Snippets store: ${SNIPPETS_STORE}"
 
 [[ -n "${VMID}" ]]   || err "--vmid is required"
 [[ -n "${VMNAME}" ]] || err "--name is required"
-[[ -f "${SSH_KEY}" ]]|| err "SSH key not found: ${SSH_KEY}"
+[[ -f "${SSH_KEY}" ]] || err "SSH key not found: ${SSH_KEY}"
 [[ "$(id -u)" -eq 0 ]] || err "Run as root."
 
 need qm; need pvesm; need wget; need timeout
@@ -77,12 +77,9 @@ pvesm status >/dev/null || err "pvesm not working"
 pvesm status | awk '{print $1}' | grep -qx "${STORAGE}" || err "Storage '${STORAGE}' not found"
 pvesm status | awk '{print $1}' | grep -qx "${SNIPPETS_STORE}" || err "Snippets store '${SNIPPETS_STORE}' not found"
 
-if ! pvesm status | awk '{print }' | grep -qx ""; then
-  err "Snippets store '' not found"
-fi
-
-if ! pvesm config "" 2>/dev/null | grep -qE '(^|[[:space:]])content.*snippets'; then
-  err "Storage '' does not support snippets"
+# Ensure the chosen snippets storage supports 'snippets' content
+if ! pvesm config "${SNIPPETS_STORE}" 2>/dev/null | grep -qE '(^|[[:space:]])content.*\bsnippets\b'; then
+  err "Storage '${SNIPPETS_STORE}' does not support snippets"
 fi
 
 ! qm status "${VMID}" &>/dev/null || err "VMID ${VMID} already exists"
@@ -159,6 +156,7 @@ info "Starting VM ${VMID}"
 qm start "${VMID}"
 
 get_vm_ip(){
+  local ip out
   for _ in {1..30}; do
     sleep 5
     if out="$(qm guest cmd "${VMID}" network-get-interfaces 2>/dev/null)"; then
@@ -175,3 +173,4 @@ get_vm_ip(){
 
 if ip="$(get_vm_ip)"; then info "VM IP: ${ip}"; else echo "[!] Could not determine VM IP yet."; fi
 echo "Done."
+

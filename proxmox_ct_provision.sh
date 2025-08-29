@@ -69,6 +69,9 @@ if [[ -n "${POST_INSTALL}" ]]; then
   pct exec "${CTID}" -- bash -lc "wget -O /root/setup_minecraft_lxc.sh '${POST_INSTALL}' && chmod +x /root/setup_minecraft_lxc.sh && /root/setup_minecraft_lxc.sh"
 fi
 
-ip="$(pct exec "${CTID}" -- bash -lc "hostname -I | awk '{print \$1}'" || true)"
+ip=""
+if ip_out="$(pct exec "${CTID}" -- bash -lc "hostname -I | awk '{print \$1}'" 2>/dev/null)"; then
+  ip="${ip_out}"
+fi
 [[ -n "${ip}" ]] && info "CT IP: ${ip}" || echo "[!] Could not determine CT IP yet."
 echo "Done."

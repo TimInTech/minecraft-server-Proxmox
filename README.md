@@ -17,6 +17,7 @@ Run a Minecraft server on your Proxmox host in minutes. Supports Java and Bedroc
 
 - [Features](#features)
 - [Quickstart](#quickstart)
+  - [Proxmox Provisioning](#proxmox-provisioning)
   - [VM (DHCP)](#vm-dhcp)
   - [VM (Static IP)](#vm-static-ip)
   - [LXC/CT](#lxct)
@@ -129,6 +130,76 @@ Access console:
 ```bash
 screen -r bedrock
 ```
+
+## 🧰 Proxmox Provisioning
+
+Run these from a Proxmox node shell as `root`.
+
+### VM (Cloud-Init Ubuntu)
+
+DHCP example:
+
+```bash
+wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/proxmox_vm_provision.sh
+chmod +x proxmox_vm_provision.sh
+./proxmox_vm_provision.sh \
+  --vmid 19265 \
+  --name mc-vm \
+  --cores 4 \
+  --memory 8192 \
+  --disk 32 \
+  --bridge vmbr0 \
+  --storage local-lvm \
+  --ssh-key /root/.ssh/id_rsa.pub \
+  --post-install "https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh"
+```
+
+Static IP example:
+
+```bash
+./proxmox_vm_provision.sh \
+  --vmid 19266 \
+  --name mc-vm-static \
+  --cores 4 \
+  --memory 8192 \
+  --disk 32 \
+  --bridge vmbr0 \
+  --storage local-lvm \
+  --ssh-key /root/.ssh/id_rsa.pub \
+  --ip 192.168.1.50/24 \
+  --gw 192.168.1.1 \
+  --dns 1.1.1.1 \
+  --post-install "https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh"
+```
+
+Notes:
+
+- The script auto-downloads an Ubuntu cloud image (default `noble`).
+- It creates a reusable template if missing, then clones the VM.
+- `--post-install` injects a cloud-init snippet to install and start Minecraft.
+- Use `--snippets-store` if your snippets storage is not `local`.
+
+### Container (LXC Ubuntu)
+
+```bash
+wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/proxmox_ct_provision.sh
+chmod +x proxmox_ct_provision.sh
+./proxmox_ct_provision.sh \
+  --ctid 12650 \
+  --hostname mc-ct \
+  --cores 4 \
+  --memory 8192 \
+  --disk 16 \
+  --bridge vmbr0 \
+  --storage local-lvm \
+  --post-install "https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh"
+```
+
+Notes:
+
+- Pulls the Ubuntu 24.04 standard template if missing.
+- Creates an unprivileged container with `nesting=1,keyctl=1` and DHCP.
+- If `--post-install` is set, it installs dependencies and sets up Minecraft inside the CT.
 
 ## 🗃️ Backups
 
