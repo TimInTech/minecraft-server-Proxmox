@@ -1,5 +1,6 @@
 <p align="center">
-
+  <img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
+</p>
 
 <p align="center">
   <a href="https://github.com/TimInTech/minecraft-server-Proxmox/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow"></a>
@@ -7,6 +8,7 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat"></a>
   <a href="https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat"></a>
 </p>
+
 
 # Minecraft Server on Proxmox
 
