@@ -1,4 +1,3 @@
-<img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
 <p align="center">
 
 
@@ -37,25 +36,26 @@ Run a Minecraft server on your Proxmox host in minutes. Supports Java and Bedroc
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [References](#references)
+- [License](#license)
 
 ---
 
 ## 🧩 Features
 
-- Simple VM/CT install scripts for Proxmox guests
-- Java and Bedrock installers
-- Auto-update for Java via `update.sh`
-- Backups with systemd timers or cron
-- Sensible defaults: EULA, `screen`, memory flags
-- Optional `systemd` service for auto-start
+- Simple VM/CT install scripts for Proxmox guests  
+- Java and Bedrock installers  
+- Auto-update for Java via `update.sh`  
+- Backups with systemd timers or cron  
+- Sensible defaults: EULA, `screen`, JVM memory flags  
+- Optional `systemd` service for auto-start  
 
-> Default ports: Java 25565/TCP, Bedrock 19132/UDP.
+> Default ports: Java **25565/TCP**, Bedrock **19132/UDP**.
 
 ---
 
 ## 🚀 Quickstart
 
-Requirements: Proxmox host, Ubuntu 24.04 LTS (recommended) or Debian 11/12 guest.
+Requirements: Proxmox host with an Ubuntu 24.04 LTS or Debian 11/12 guest.
 
 ### VM (DHCP)
 
@@ -270,3 +270,8 @@ See [SERVER\_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage
 * Mojang Bedrock Downloads: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
 * Proxmox Docs: [https://pve.proxmox.com/wiki/Main\_Page](https://pve.proxmox.com/wiki/Main_Page)
 
+---
+
+## License
+
+[MIT](LICENSE)
