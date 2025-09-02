@@ -1,3 +1,4 @@
+<img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
 <p align="center">
   <img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
 </p>
@@ -17,10 +18,8 @@ Run a Minecraft server on your Proxmox host in minutes. Supports Java and Bedroc
 
 **Version 2.0 — 2025-09-02**
 
-This repository also provides a Bash script to provision Ubuntu Cloud-Init VMs on Proxmox, optimized for Minecraft or similar services.
-
-> [!IMPORTANT]  
-> The provisioning script **must be executed as `root`** — without `sudo`. Either log in directly as `root` or use `su -` before running it.
+> **Notice**  
+> The experimental Proxmox Cloud-Init provisioning scripts have been **temporarily removed**. Manual VM/CT setup remains fully supported.
 
 ---
 
@@ -32,7 +31,6 @@ This repository also provides a Bash script to provision Ubuntu Cloud-Init VMs o
   - [VM (Static IP)](#vm-static-ip)
   - [LXC/CT](#lxct)
   - [Bedrock](#bedrock)
-- [Proxmox Provisioning](#proxmox-provisioning)
 - [Backups](#backups)
 - [Auto-Update](#auto-update)
 - [Configuration](#configuration)
@@ -45,21 +43,14 @@ This repository also provides a Bash script to provision Ubuntu Cloud-Init VMs o
 
 ## 🧩 Features
 
-- VM/CT provisioning with clear steps for Proxmox
+- Simple VM/CT install scripts for Proxmox guests
 - Java and Bedrock installers
 - Auto-update for Java via `update.sh`
 - Backups with systemd timers or cron
 - Sensible defaults: EULA, `screen`, memory flags
 - Optional `systemd` service for auto-start
-- Proxmox Cloud-Init provisioning script with:
-  - Automatic template creation from Ubuntu cloud image
-  - Clone to new VM with configurable resources
-  - Cloud-init user-data via snippets
-  - `--ensure-snippets` option to auto-create a `dir` snippets storage
-  - Supports DHCP and static IPs
 
-> [!TIP]  
-> Default ports: Java 25565/TCP, Bedrock 19132/UDP. Open these on your firewall/router.
+> Default ports: Java 25565/TCP, Bedrock 19132/UDP.
 
 ---
 
@@ -83,8 +74,6 @@ screen -r minecraft
 
 ### VM (Static IP)
 
-Example netplan config:
-
 ```bash
 sudo tee /etc/netplan/01-mc.yaml >/dev/null <<'YAML'
 network:
@@ -101,12 +90,20 @@ YAML
 sudo netplan apply
 ```
 
+Then run the installer as in DHCP.
+
 ### LXC/CT
 
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft_lxc.sh
 chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
+```
+
+Access console:
+
+```bash
+screen -r minecraft
 ```
 
 ### Bedrock
@@ -117,79 +114,160 @@ chmod +x setup_bedrock.sh
 ./setup_bedrock.sh
 ```
 
+Access console:
+
+```bash
+screen -r bedrock
+```
+
 ---
 
-## 🧰 Proxmox Provisioning
+## 🗃️ Backups
 
-Script: `proxmox_vm_provision.sh` (run on the Proxmox node shell, as `root` only).
+Back up worlds and server files before updates. Choose systemd or cron.
 
-### DHCP Example
+### Option A: systemd (Java/Bedrock)
 
-```bash
-wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/proxmox_vm_provision.sh
-chmod +x proxmox_vm_provision.sh
-./proxmox_vm_provision.sh \
-  --vmid 19265 \
-  --name mc-vm \
-  --cores 4 \
-  --memory 8192 \
-  --disk 32 \
-  --bridge vmbr0 \
-  --storage local-lvm \
-  --ssh-key /root/.ssh/id_rsa.pub \
-  --post-install "https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh" \
-  --ensure-snippets
-```
-
-### Static IP Example
+Config:
 
 ```bash
-./proxmox_vm_provision.sh \
-  --vmid 19266 \
-  --name mc-vm-static \
-  --cores 4 \
-  --memory 8192 \
-  --disk 32 \
-  --bridge vmbr0 \
-  --storage local-lvm \
-  --ssh-key /root/.ssh/id_rsa.pub \
-  --ip 192.168.1.50/24 \
-  --gw 192.168.1.1 \
-  --dns 1.1.1.1 \
-  --post-install "https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh" \
-  --ensure-snippets
+sudo tee /etc/mc_backup.conf >/dev/null <<'EOF'
+MC_SRC_DIR=/opt/minecraft
+MC_BEDROCK_DIR=/opt/minecraft-bedrock
+BACKUP_DIR=/var/backups/minecraft
+RETAIN_DAYS=7
+EOF
 ```
 
-### Important Options
+Service + timer:
 
-* `--ensure-snippets` → if snippets storage is missing, creates a new `dir` storage (safe default).
-* `--snippets-path` → override path for snippets (default `/var/lib/vz/snippets`).
-* `--post-install` → URL of a script executed in the VM after first boot.
+```bash
+sudo tee /etc/systemd/system/mc-backup.service >/dev/null <<'EOF'
+[Unit]
+Description=Minecraft backup (tar)
 
-### Security Notes
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/mc_backup.conf
+ExecStart=/bin/mkdir -p "${BACKUP_DIR}"
+ExecStart=/bin/bash -c 'tar -czf "${BACKUP_DIR}/java-$(date +%%F).tar.gz" "${MC_SRC_DIR}"'
+ExecStart=/bin/bash -c '[ -d "${MC_BEDROCK_DIR}" ] && tar -czf "${BACKUP_DIR}/bedrock-$(date +%%F).tar.gz" "${MC_BEDROCK_DIR}" || true'
+EOF
 
-* No hardcoded passwords in the repo.
-* Post-install scripts are downloaded from a given URL — **verify before use**.
+sudo tee /etc/systemd/system/mc-backup.timer >/dev/null <<'EOF'
+[Unit]
+Description=Nightly Minecraft backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now mc-backup.timer
+```
+
+Run on demand:
+
+```bash
+sudo systemctl start mc-backup.service
+```
+
+### Option B: cron
+
+```bash
+crontab -e
+30 3 * * * tar -czf /var/backups/minecraft/mc-$(date +\%F).tar.gz /opt/minecraft
+45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
+```
+
+---
+
+## ♻️ Auto-Update
+
+Java edition ships with `/opt/minecraft/update.sh`:
+
+```bash
+cd /opt/minecraft
+./update.sh
+```
+
+Cron example:
+
+```bash
+crontab -e
+0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
+```
+
+> Bedrock requires a manual download from Mojang. See `bedrock_helper.sh` for a reminder message.
+
+---
+
+## ⚙️ Configuration
+
+### `/etc/mc_backup.conf`
+
+* `MC_SRC_DIR`: Java server path (default `/opt/minecraft`)
+* `MC_BEDROCK_DIR`: Bedrock server path (default `/opt/minecraft-bedrock`)
+* `BACKUP_DIR`: Backup target directory (default `/var/backups/minecraft`)
+* `RETAIN_DAYS`: Days to keep backups (manual cleanup policy)
+
+### JVM memory (Java)
+
+Edit `/opt/minecraft/start.sh`:
+
+```bash
+#!/bin/bash
+java -Xms2G -Xmx4G -jar server.jar nogui
+```
+
+Small: `-Xms1G -Xmx2G`, Medium: `-Xms2G -Xmx4G`.
+
+### Firewall
+
+```bash
+sudo ufw allow 25565/tcp    # Java
+sudo ufw allow 19132/udp    # Bedrock
+sudo ufw enable
+```
+
+### Optional: systemd service (Java)
+
+```bash
+sudo cp minecraft.service /etc/systemd/system/minecraft.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now minecraft
+```
+
+---
+
+## 🕹️ Admin/Commands
+
+See [SERVER\_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage, and common commands.
 
 ---
 
 ## 🔧 Troubleshooting
 
-* **“This script must be run as root”** → run with `su -` or log in as `root`.
-* **“Storage does not support snippets”** → use `--ensure-snippets` or add a `dir` storage in `storage.cfg`.
-* LVM storages (like `local-lvm`) don’t support snippets → fallback to `--ensure-snippets`.
+* Java 21 unavailable on Debian 11 → falls back to OpenJDK 17.
+* Missing `start.sh` → recreate as shown and `chmod +x start.sh`.
+* Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
 ---
 
 ## 🤝 Contributing
 
-* [Open an issue](../../issues) (include Proxmox version and `pvesm/qm` output).
-* Pull requests are welcome.
+* [Open an issue](../../issues)
+* Submit a Pull Request
 
 ---
 
 ## 📚 References
 
 * PaperMC: [https://papermc.io/](https://papermc.io/)
-* Mojang Bedrock: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
+* Mojang Bedrock Downloads: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
 * Proxmox Docs: [https://pve.proxmox.com/wiki/Main\_Page](https://pve.proxmox.com/wiki/Main_Page)
+
