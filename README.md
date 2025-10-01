@@ -1,3 +1,5 @@
+# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-09-02)
+
 <p align="center">
   <img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
 </p>
@@ -9,55 +11,40 @@
   <a href="https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat"></a>
 </p>
 
+---
 
-# Minecraft Server on Proxmox
+## 📝 Introduction
 
-Run a Minecraft server on your Proxmox host in minutes. Supports Java and Bedrock on both Virtual Machines (VM) and Containers (LXC/CT).
+This repository lets you deploy a high-performance Minecraft server (Java & Bedrock) on your Proxmox host in minutes.  
+Designed for both VMs and LXC containers, it provides easy CLI-first installation, automated backups, and update scripts.  
+Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ---
 
-**Version 2.0 — 2025-09-02**
+## 🧩 Technologies & Dependencies
 
-> **Notice**  
-> The experimental Proxmox Cloud-Init provisioning scripts have been **temporarily removed**. Manual VM/CT setup remains fully supported.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Quickstart](#quickstart)
-  - [VM (DHCP)](#vm-dhcp)
-  - [VM (Static IP)](#vm-static-ip)
-  - [LXC/CT](#lxct)
-  - [Bedrock](#bedrock)
-- [Backups](#backups)
-- [Auto-Update](#auto-update)
-- [Configuration](#configuration)
-- [Admin/Commands](#admincommands)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [References](#references)
-- [License](#license)
+![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
+![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012-A81D33?logo=debian&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
+![Java](https://img.shields.io/badge/OpenJDK-17%20%2F%2021-007396?logo=java&logoColor=white)
+![Minecraft](https://img.shields.io/badge/Minecraft-Java%20%2F%20Bedrock-62B47A?logo=minecraft&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-%E2%9C%94-4EAA25?logo=gnubash&logoColor=white)
+![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
+![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
 ---
 
-## 🧩 Features
+## 📊 Status
 
-- Simple VM/CT install scripts for Proxmox guests  
-- Java and Bedrock installers  
-- Auto-update for Java via `update.sh`  
-- Backups with systemd timers or cron  
-- Sensible defaults: EULA, `screen`, JVM memory flags  
-- Optional `systemd` service for auto-start  
-
-> Default ports: Java **25565/TCP**, Bedrock **19132/UDP**.
+> ⚠ No build workflow present  
+> For automated tests or deployment, please add `main.yml` to `.github/workflows/`.
 
 ---
 
 ## 🚀 Quickstart
 
-Requirements: Proxmox host with an Ubuntu 24.04 LTS or Debian 11/12 guest.
+**Requirements:**  
+Proxmox host, Ubuntu 24.04 LTS or Debian 11/12 guest (VM or CT).
 
 ### VM (DHCP)
 
@@ -65,10 +52,8 @@ Requirements: Proxmox host with an Ubuntu 24.04 LTS or Debian 11/12 guest.
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
 chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
-````
-
-Access console:
-
+```
+Open console:
 ```bash
 screen -r minecraft
 ```
@@ -90,8 +75,7 @@ network:
 YAML
 sudo netplan apply
 ```
-
-Then run the installer as in DHCP.
+Then run the installer as above.
 
 ### LXC/CT
 
@@ -100,9 +84,7 @@ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/s
 chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
 ```
-
-Access console:
-
+Open console:
 ```bash
 screen -r minecraft
 ```
@@ -114,9 +96,7 @@ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/s
 chmod +x setup_bedrock.sh
 ./setup_bedrock.sh
 ```
-
-Access console:
-
+Open console:
 ```bash
 screen -r bedrock
 ```
@@ -125,11 +105,9 @@ screen -r bedrock
 
 ## 🗃️ Backups
 
-Back up worlds and server files before updates. Choose systemd or cron.
+Backup worlds and server files before updates! Choose systemd or cron.
 
-### Option A: systemd (Java/Bedrock)
-
-Config:
+### Option A: systemd
 
 ```bash
 sudo tee /etc/mc_backup.conf >/dev/null <<'EOF'
@@ -138,15 +116,10 @@ MC_BEDROCK_DIR=/opt/minecraft-bedrock
 BACKUP_DIR=/var/backups/minecraft
 RETAIN_DAYS=7
 EOF
-```
 
-Service + timer:
-
-```bash
 sudo tee /etc/systemd/system/mc-backup.service >/dev/null <<'EOF'
 [Unit]
 Description=Minecraft backup (tar)
-
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/mc_backup.conf
@@ -158,11 +131,9 @@ EOF
 sudo tee /etc/systemd/system/mc-backup.timer >/dev/null <<'EOF'
 [Unit]
 Description=Nightly Minecraft backup
-
 [Timer]
 OnCalendar=*-*-* 03:30:00
 Persistent=true
-
 [Install]
 WantedBy=timers.target
 EOF
@@ -170,9 +141,7 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable --now mc-backup.timer
 ```
-
-Run on demand:
-
+On-demand:
 ```bash
 sudo systemctl start mc-backup.service
 ```
@@ -189,54 +158,44 @@ crontab -e
 
 ## ♻️ Auto-Update
 
-Java edition ships with `/opt/minecraft/update.sh`:
-
+Java Edition:  
 ```bash
 cd /opt/minecraft
 ./update.sh
 ```
-
-Cron example:
-
+Cron:
 ```bash
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
-
-> Bedrock requires a manual download from Mojang. See `bedrock_helper.sh` for a reminder message.
+> Bedrock requires manual download from Mojang (`bedrock_helper.sh` gives reminder message).
 
 ---
 
 ## ⚙️ Configuration
 
-### `/etc/mc_backup.conf`
+**/etc/mc_backup.conf**
+* `MC_SRC_DIR`: Java server path (`/opt/minecraft`)
+* `MC_BEDROCK_DIR`: Bedrock server path (`/opt/minecraft-bedrock`)
+* `BACKUP_DIR`: Backup target (`/var/backups/minecraft`)
+* `RETAIN_DAYS`: Retention days
 
-* `MC_SRC_DIR`: Java server path (default `/opt/minecraft`)
-* `MC_BEDROCK_DIR`: Bedrock server path (default `/opt/minecraft-bedrock`)
-* `BACKUP_DIR`: Backup target directory (default `/var/backups/minecraft`)
-* `RETAIN_DAYS`: Days to keep backups (manual cleanup policy)
-
-### JVM memory (Java)
-
+**JVM memory (Java)**  
 Edit `/opt/minecraft/start.sh`:
-
 ```bash
 #!/bin/bash
 java -Xms2G -Xmx4G -jar server.jar nogui
 ```
-
 Small: `-Xms1G -Xmx2G`, Medium: `-Xms2G -Xmx4G`.
 
-### Firewall
-
+**Firewall**
 ```bash
 sudo ufw allow 25565/tcp    # Java
 sudo ufw allow 19132/udp    # Bedrock
 sudo ufw enable
 ```
 
-### Optional: systemd service (Java)
-
+**Optional: systemd service (Java)**
 ```bash
 sudo cp minecraft.service /etc/systemd/system/minecraft.service
 sudo systemctl daemon-reload
@@ -247,14 +206,14 @@ sudo systemctl enable --now minecraft
 
 ## 🕹️ Admin/Commands
 
-See [SERVER\_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage, and common commands.
+See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage, and common commands.
 
 ---
 
 ## 🔧 Troubleshooting
 
 * Java 21 unavailable on Debian 11 → falls back to OpenJDK 17.
-* Missing `start.sh` → recreate as shown and `chmod +x start.sh`.
+* Missing `start.sh` → recreate as shown above and `chmod +x start.sh`.
 * Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
 ---
@@ -270,7 +229,7 @@ See [SERVER\_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage
 
 * PaperMC: [https://papermc.io/](https://papermc.io/)
 * Mojang Bedrock Downloads: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
-* Proxmox Docs: [https://pve.proxmox.com/wiki/Main\_Page](https://pve.proxmox.com/wiki/Main_Page)
+* Proxmox Docs: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
 
 ---
 
