@@ -4,7 +4,7 @@
 Do not execute locally. Explain only. Provide simulated steps and risks.
 
 This repository contains **shell scripts** (not a buildable project).  
-There is **no `build` task**. In this workspace we operate in **simulation-only mode**: do not execute commands on this machine. When asked to "run", only show and explain the commands; do not actually run them.
+There is **no `build` task**. In this workspace we operate in **simulation-only mode**: do not execute commands on this machine.
 
 ## Execution Options
 
@@ -16,7 +16,7 @@ When asked “Run/Build”, provide these options as example commands (explanati
 chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
 screen -r minecraft
-```
+````
 
 ### Option 2: Java server in LXC/Container
 
@@ -53,6 +53,8 @@ sudo systemctl enable --now minecraft
 
 * Options 1–3 perform `apt` installs and system changes — explain but do not execute in this environment.
 * Only show these five options; do **not** suggest any `build`/`compile` steps.
-* Always show the full shell commands for the user's host (`chmod +x` before execution) but clarify they are examples for external execution.
+* Always show the full shell commands for the user's host (`chmod +x` before execution), but clarify they are examples for external execution only.
 * For detailed step-by-step effects of each script, refer to `SIMULATION.md`.
+
+
 
