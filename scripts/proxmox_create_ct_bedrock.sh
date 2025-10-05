@@ -11,7 +11,7 @@ pct create "$CTID" "${STORE}:vztmpl/${TPL}"   -hostname mc-bedrock -cores 2 -mem
 pct start "$CTID"
 pct exec "$CTID" -- bash -lc '
   apt update && apt -y install wget curl
-  wget -qO /root/setup_bedrock.sh https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox.git/main/setup_bedrock.sh
+  wget -qO /root/setup_bedrock.sh https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_bedrock.sh
   bash /root/setup_bedrock.sh
 '
 echo "CT $CTID ready. Change password. Attach: pct enter $CTID"
