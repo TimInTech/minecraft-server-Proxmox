@@ -19,8 +19,6 @@ fi
 
 # Create the Minecraft server directory
 mkdir -p /opt/minecraft && cd /opt/minecraft || exit 1
-if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
-chown -R minecraft:minecraft /opt/minecraft
 
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
@@ -47,6 +45,6 @@ EOF
 chmod +x start.sh
 
 # Start the server in a detached screen session
-if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
+screen -dmS minecraft ./start.sh
 
 echo "✅ Minecraft Server setup complete! Use 'screen -r minecraft' to access the console."
