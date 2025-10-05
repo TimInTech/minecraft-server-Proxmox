@@ -46,9 +46,6 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 🚀 Quickstart
 
-**Requirements:**  
-Proxmox host, Ubuntu 24.04 LTS or Debian 11/12 guest (VM or CT).
-
 ### VM (DHCP)
 
 ```bash
