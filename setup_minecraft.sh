@@ -20,7 +20,6 @@ fi
 sudo mkdir -p /opt/minecraft
 if ! id -u minecraft >/dev/null 2>&1; then sudo useradd -r -m -s /bin/bash minecraft; fi
 sudo chown -R minecraft:minecraft /opt/minecraft
-sudo chown "$(whoami)":"$(whoami)" /opt/minecraft
 cd /opt/minecraft || exit 1
 
 # Fetch the latest PaperMC version
@@ -75,4 +74,4 @@ chmod +x update.sh
 if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
 
 echo "✅ Minecraft Server setup complete!"
-echo "To access console: sudo -u $(whoami) screen -r minecraft"
+echo "To access console: sudo -u minecraft screen -r minecraft"

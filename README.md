@@ -39,8 +39,8 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 📊 Status
 
-> ⚠ No build workflow present  
-> For automated tests or deployment, please add `main.yml` to `.github/workflows/`.
+ShellCheck linting workflow is present under `.github/workflows/shellcheck.yml`.  
+Add additional tests or deployment workflows as needed.
 
 ---
 
