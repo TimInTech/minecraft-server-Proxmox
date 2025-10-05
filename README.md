@@ -211,6 +211,7 @@ See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage,
 ---
 
 ## 🔧 Troubleshooting
+* Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; see `docs/BEDROCK_NETWORKING.md`.
 
 * Java 21 unavailable on Debian 11 → falls back to OpenJDK 17.
 * Missing `start.sh` → recreate as shown above and `chmod +x start.sh`.
