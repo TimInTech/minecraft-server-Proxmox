@@ -25,6 +25,9 @@ chown -R minecraft:minecraft /opt/minecraft
 # Fetch the latest PaperMC version
 LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
 LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
+BUILD_JSON="$(curl -s "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")"
+EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
+JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
 
 # Validate if the version and build exist
 if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
@@ -33,7 +36,17 @@ if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
 fi
 
 echo "Downloading PaperMC Version: $LATEST_VERSION, Build: $LATEST_BUILD"
-wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/$LATEST_VERSION/builds/$LATEST_BUILD/downloads/paper-$LATEST_VERSION-$LATEST_BUILD.jar"
+wget -O "server.jar" "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
+if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ]; then
+  if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})"
+    exit 1
+  fi
+  echo "SHA256 verified: ${ACTUAL_SHA}"
+else
+  echo "WARNING: No upstream SHA provided; computed: ${ACTUAL_SHA}"
+fi
 
 # Accept the EULA
 echo "eula=true" > eula.txt
