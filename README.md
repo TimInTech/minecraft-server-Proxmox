@@ -19,6 +19,9 @@ This repository lets you deploy a high-performance Minecraft server (Java & Bedr
 Designed for both VMs and LXC containers, it provides easy CLI-first installation, automated backups, and update scripts.  
 Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
+> Note for this workspace: Simulation only
+> In this development environment we do not execute or install anything. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
+
 ---
 
 ## 🧩 Technologies & Dependencies
