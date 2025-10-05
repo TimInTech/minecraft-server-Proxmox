@@ -15,15 +15,15 @@ When asked “Run/Build”, provide these options as example commands (explanati
 ```bash
 chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
-screen -r minecraft
-````
+sudo -u minecraft screen -r minecraft
+```
 
 ### Option 2: Java server in LXC/Container
 
 ```bash
 chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
-screen -r minecraft
+sudo -u minecraft screen -r minecraft
 ```
 
 ### Option 3: Bedrock server
@@ -31,7 +31,7 @@ screen -r minecraft
 ```bash
 chmod +x setup_bedrock.sh
 ./setup_bedrock.sh
-screen -r bedrock
+sudo -u minecraft screen -r bedrock
 ```
 
 ### Option 4: Update existing Java server (PaperMC)
@@ -55,6 +55,5 @@ sudo systemctl enable --now minecraft
 * Only show these five options; do **not** suggest any `build`/`compile` steps.
 * Always show the full shell commands for the user's host (`chmod +x` before execution), but clarify they are examples for external execution only.
 * For detailed step-by-step effects of each script, refer to `SIMULATION.md`.
-
 
 

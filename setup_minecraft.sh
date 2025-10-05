@@ -20,7 +20,6 @@ fi
 sudo mkdir -p /opt/minecraft
 if ! id -u minecraft >/dev/null 2>&1; then sudo useradd -r -m -s /bin/bash minecraft; fi
 sudo chown -R minecraft:minecraft /opt/minecraft
-sudo chown "$(whoami)":"$(whoami)" /opt/minecraft
 cd /opt/minecraft || exit 1
 
 # Fetch the latest PaperMC version
@@ -60,19 +59,37 @@ EOF
 chmod +x start.sh
 
 # Create update script
-cat <<EOF > update.sh
+cat <<'EOF' > update.sh
 #!/bin/bash
+set -euo pipefail
 cd /opt/minecraft || exit 1
-LATEST_VERSION=\$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=\$(curl -s https://api.papermc.io/v2/projects/paper/versions/\$LATEST_VERSION | jq -r '.builds | last')
+LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
+LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
+BUILD_JSON="$(curl -s "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")"
+EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
+JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
 
-wget -O server.jar "https://api.papermc.io/v2/projects/paper/versions/\$LATEST_VERSION/builds/\$LATEST_BUILD/downloads/paper-\$LATEST_VERSION-\$LATEST_BUILD.jar"
-echo "✅ Update complete."
+wget -O "server.jar" "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
+if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ]; then
+  if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})"
+    exit 1
+  fi
+  echo "SHA256 verified: ${ACTUAL_SHA}"
+else
+  echo "WARNING: No upstream SHA provided; computed: ${ACTUAL_SHA}"
+fi
+
+echo "✅ Update complete to version $LATEST_VERSION (build $LATEST_BUILD)"
 EOF
 chmod +x update.sh
+
+# Ensure all files are owned by the runtime user
+sudo chown -R minecraft:minecraft /opt/minecraft
 
 # Start server in detached screen session
 if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
 
 echo "✅ Minecraft Server setup complete!"
-echo "To access console: sudo -u $(whoami) screen -r minecraft"
+echo "To access console: sudo -u minecraft screen -r minecraft"

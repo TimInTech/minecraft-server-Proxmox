@@ -39,8 +39,8 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 📊 Status
 
-> ⚠ No build workflow present  
-> For automated tests or deployment, please add `main.yml` to `.github/workflows/`.
+ShellCheck linting workflow is present under `.github/workflows/shellcheck.yml`.  
+Add additional tests or deployment workflows as needed.
 
 ---
 
@@ -55,7 +55,7 @@ chmod +x setup_minecraft.sh
 ```
 Open console:
 ```bash
-screen -r minecraft
+sudo -u minecraft screen -r minecraft
 ```
 
 ### VM (Static IP)
@@ -86,7 +86,7 @@ chmod +x setup_minecraft_lxc.sh
 ```
 Open console:
 ```bash
-screen -r minecraft
+sudo -u minecraft screen -r minecraft
 ```
 
 ### Bedrock
@@ -98,7 +98,7 @@ chmod +x setup_bedrock.sh
 ```
 Open console:
 ```bash
-screen -r bedrock
+sudo -u minecraft screen -r bedrock
 ```
 
 ---
