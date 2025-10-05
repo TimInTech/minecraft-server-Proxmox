@@ -18,8 +18,6 @@ fi
 
 # Set up server directory
 sudo mkdir -p /opt/minecraft
-if ! id -u minecraft >/dev/null 2>&1; then sudo useradd -r -m -s /bin/bash minecraft; fi
-sudo chown -R minecraft:minecraft /opt/minecraft
 sudo chown "$(whoami)":"$(whoami)" /opt/minecraft
 cd /opt/minecraft || exit 1
 
@@ -59,7 +57,7 @@ EOF
 chmod +x update.sh
 
 # Start server in detached screen session
-if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
+screen -dmS minecraft ./start.sh
 
 echo "✅ Minecraft Server setup complete!"
 echo "To access console: sudo -u $(whoami) screen -r minecraft"
