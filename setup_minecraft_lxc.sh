@@ -59,6 +59,9 @@ EOF
 
 chmod +x start.sh
 
+# Ensure all files are owned by the runtime user
+chown -R minecraft:minecraft /opt/minecraft
+
 # Start the server in a detached screen session
 if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
 

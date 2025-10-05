@@ -55,7 +55,7 @@ chmod +x setup_minecraft.sh
 ```
 Open console:
 ```bash
-screen -r minecraft
+sudo -u minecraft screen -r minecraft
 ```
 
 ### VM (Static IP)
@@ -86,7 +86,7 @@ chmod +x setup_minecraft_lxc.sh
 ```
 Open console:
 ```bash
-screen -r minecraft
+sudo -u minecraft screen -r minecraft
 ```
 
 ### Bedrock
@@ -98,7 +98,7 @@ chmod +x setup_bedrock.sh
 ```
 Open console:
 ```bash
-screen -r bedrock
+sudo -u minecraft screen -r bedrock
 ```
 
 ---

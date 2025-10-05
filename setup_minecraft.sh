@@ -85,6 +85,9 @@ echo "✅ Update complete to version $LATEST_VERSION (build $LATEST_BUILD)"
 EOF
 chmod +x update.sh
 
+# Ensure all files are owned by the runtime user
+sudo chown -R minecraft:minecraft /opt/minecraft
+
 # Start server in detached screen session
 if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
 
