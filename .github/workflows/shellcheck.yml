@@ -1,0 +1,17 @@
+name: Shellcheck
+on:
+  push:
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: |
+          shopt -s globstar
+          shellcheck -S warning \
+            *.sh **/*.sh \
+            || (echo "::error ::Shellcheck failed"; exit 1)

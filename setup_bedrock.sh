@@ -11,6 +11,14 @@ LATEST_URL="$(printf "%s" "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedroc
 if [[ -z "${LATEST_URL:-}" ]]; then echo "ERROR: Could not find Bedrock server URL"; exit 1; fi
 echo "Downloading: $LATEST_URL"
 wget -O bedrock-server.zip "$LATEST_URL"
+ACTUAL_SHA="$(sha256sum bedrock-server.zip | awk '{print $1}')"
+echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"
+if [ -n "${REQUIRED_BEDROCK_SHA256:-}" ]; then
+  if [ "$ACTUAL_SHA" != "$REQUIRED_BEDROCK_SHA256" ]; then
+    echo "ERROR: SHA256 mismatch for Bedrock. expected=${REQUIRED_BEDROCK_SHA256} got=${ACTUAL_SHA}"
+    exit 1
+  fi
+fi
 unzip -tq bedrock-server.zip >/dev/null
 unzip -o bedrock-server.zip && rm -f bedrock-server.zip
 [[ -f bedrock_server ]] || { echo "ERROR: bedrock_server missing"; exit 1; }

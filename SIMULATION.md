@@ -149,3 +149,9 @@ In this workspace:
 - Do not run apt, systemctl, curl against production endpoints for side effects, or any scripts.
 - Provide commands and rationale only. When asked to run, respond with simulated steps and expected outcomes.
 - Documentation and scripts changes should be proposed via PRs, with SIMULATION.md kept up to date.
+
+## Integrity & Firewall
+
+> Integrity: Java downloads are SHA256-verified via PaperMC API.  
+> Bedrock has no official checksum; the installer prints the archive’s SHA256.  
+> Enforce a known value by exporting `REQUIRED_BEDROCK_SHA256=<sha256>` before running `setup_bedrock.sh`.

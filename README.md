@@ -195,6 +195,22 @@ sudo ufw allow 19132/udp    # Bedrock
 sudo ufw enable
 ```
 
+### Integrity & Firewall
+
+> Integrity: Java downloads are SHA256-verified via PaperMC API.  
+> Bedrock has no official checksum; the installer prints the archive’s SHA256.  
+> Enforce a known value by exporting `REQUIRED_BEDROCK_SHA256=<sha256>` before running `setup_bedrock.sh`.
+
+- Java: TCP 25565
+- Bedrock: UDP 19132
+
+Example UFW:
+```bash
+sudo ufw allow 25565/tcp
+sudo ufw allow 19132/udp
+sudo ufw enable
+```
+
 **Optional: systemd service (Java)**
 ```bash
 sudo cp minecraft.service /etc/systemd/system/minecraft.service
@@ -239,4 +255,3 @@ See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage,
 [MIT](LICENSE)
 
 > Proxmox helper: see `scripts/proxmox_create_ct_bedrock.sh` to auto-create a Debian 12 CT and install Bedrock (run on Proxmox host).
-
