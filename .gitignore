@@ -3,3 +3,4 @@
 node_modules/
 .DS_Store
 *.zip
+path/to/file_or_folder
