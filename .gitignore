@@ -4,3 +4,7 @@ node_modules/
 .DS_Store
 *.zip
 path/to/file_or_folder
+
+# local-only
+refactor*.diff
+fix_all_issues.sh
