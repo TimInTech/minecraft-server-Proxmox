@@ -1,13 +1,27 @@
 [Unit]
-Description=Minecraft Server
+Description=Minecraft Server (Paper)
 After=network.target
 
 [Service]
-User=root
+User=minecraft
+Group=minecraft
 WorkingDirectory=/opt/minecraft
-ExecStart=/opt/minecraft/start.sh
-Restart=always
-Nice=1
+ExecStart=/usr/bin/bash /opt/minecraft/start.sh
+Restart=on-failure
+UMask=0027
+
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/opt/minecraft
 
 [Install]
 WantedBy=multi-user.target

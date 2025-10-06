@@ -1,68 +1,33 @@
 #!/usr/bin/env bash
-
-# Minecraft Server Installer for LXC Containers on Proxmox
-# Tested on Debian 11/12 and Ubuntu 24.04
-# Author: TimInTech
-
-
 set -euo pipefail
-
-# Update package lists and install required dependencies
 apt update && apt upgrade -y
-apt install -y screen wget curl jq unzip
-
-# Install Java: try OpenJDK 21 if available, fall back to OpenJDK 17.
-if ! apt install -y openjdk-21-jre-headless; then
-  echo "openjdk-21-jre-headless is not available; falling back to openjdk-17-jre-headless"
-  apt install -y openjdk-17-jre-headless
-fi
-
-# Create the Minecraft server directory
-mkdir -p /opt/minecraft && cd /opt/minecraft || exit 1
+apt install -y screen wget curl jq unzip ca-certificates gnupg
+ensure_java() {
+  if apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
+  install -d -m 0755 /usr/share/keyrings
+  curl -fsSL https://apt.corretto.aws/corretto.key | gpg --dearmor -o /usr/share/keyrings/corretto.gpg
+  echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" > /etc/apt/sources.list.d/corretto.list
+  apt-get update
+  apt-get install -y java-21-amazon-corretto-jre || apt-get install -y java-21-amazon-corretto-jdk
+}
+ensure_java
+mkdir -p /opt/minecraft
 if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
 chown -R minecraft:minecraft /opt/minecraft
-
-# Fetch the latest PaperMC version
-LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
-BUILD_JSON="$(curl -s "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")"
-EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
-JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
-
-# Validate if the version and build exist
-if [[ -z "$LATEST_VERSION" || -z "$LATEST_BUILD" ]]; then
-  echo "ERROR: Couldn't retrieve the latest PaperMC version. Check https://papermc.io/downloads"
-  exit 1
-fi
-
-echo "Downloading PaperMC Version: $LATEST_VERSION, Build: $LATEST_BUILD"
-wget -O "server.jar" "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
-ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
-if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ]; then
-  if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
-    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})"
-    exit 1
-  fi
-  echo "SHA256 verified: ${ACTUAL_SHA}"
-else
-  echo "WARNING: No upstream SHA provided; computed: ${ACTUAL_SHA}"
-fi
-
-# Accept the EULA
+cd /opt/minecraft
 echo "eula=true" > eula.txt
-
-# Create start script
-cat <<EOF > start.sh
-#!/bin/bash
-java -Xms2G -Xmx4G -jar server.jar nogui
-EOF
-
+mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo); mem_mb=$((mem_kb/1024))
+xmx=$(( mem_mb/2 )); ((xmx<2048)) && xmx=2048; ((xmx>16384)) && xmx=16384
+xms=$(( mem_mb/4 )); ((xms<1024)) && xms=1024; ((xms>xmx)) && xms=$xmx
+cat > start.sh <<E2
+#!/usr/bin/env bash
+exec java -Xms${xms}M -Xmx${xmx}M -jar server.jar nogui
+E2
 chmod +x start.sh
-
-# Ensure all files are owned by the runtime user
-chown -R minecraft:minecraft /opt/minecraft
-
-# Start the server in a detached screen session
-if command -v runuser >/dev/null 2>&1; then runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; else sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'; fi
-
-echo "✅ Minecraft Server setup complete! Use 'screen -r minecraft' to access the console."
+install -d -m 775 -o root -g utmp /run/screen || true
+if command -v runuser >/dev/null 2>&1; then
+  runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
+else
+  su -s /bin/bash -c 'cd /opt/minecraft && screen -dmS minecraft ./start.sh' minecraft
+fi
+echo "✅ Minecraft Java setup complete (LXC). Attach: screen -r minecraft"
