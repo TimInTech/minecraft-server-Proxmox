@@ -1,6 +1,6 @@
-# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-09-02)
+# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
 
-![Minecraft Server on Proxmox](assets/banner.png)
+<img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
 
 <p align="center">
   <em>Minecraft Server on Proxmox</em>
@@ -11,7 +11,17 @@
   <a href="https://github.com/TimInTech/minecraft-server-Proxmox/fork"><img alt="GitHub Forks" src="https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat"></a>
   <a href="https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat"></a>
+  <a href="https://buymeacoffee.com/timintech"><img alt="Buy Me A Coffee" src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat"></a>
 </p>
+
+---
+
+## ✅ Requirements
+- Proxmox VE: 7.4+ oder 8.x
+- Gast-OS: Debian 12/13 oder Ubuntu 24.04
+- CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
+- Storage: ≥10 GB SSD
+- Netzwerk: Bridged NIC (vmbr0), offene Ports 25565/TCP, 19132/UDP
 
 ---
 
@@ -28,8 +38,14 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 🧩 Technologies & Dependencies
 
+- Proxmox VE 7.4+ / 8.x
+- Debian 12/13, Ubuntu 24.04
+- Java 21 (Default), 17 (Fallback)
+- Minecraft Java & Bedrock
+- Bash, systemd, screen
+
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
-![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012-A81D33?logo=debian&logoColor=white)
+![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012%20%2F%2013-A81D33?logo=debian&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
 ![Java](https://img.shields.io/badge/OpenJDK-17%20%2F%2021-007396?logo=java&logoColor=white)
 ![Minecraft](https://img.shields.io/badge/Minecraft-Java%20%2F%20Bedrock-62B47A?logo=minecraft&logoColor=white)
@@ -41,8 +57,8 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 📊 Status
 
-ShellCheck linting workflow is present under `.github/workflows/shellcheck.yml`.  
-Add additional tests or deployment workflows as needed.
+- ShellCheck linting workflow ist unter `.github/workflows/shellcheck.yml` vorhanden.
+- Weitere Tests oder Deployment-Workflows nach Bedarf ergänzen.
 
 ---
 
@@ -79,6 +95,8 @@ network:
 YAML
 sudo netplan apply
 ```
+
+> Passe Nameserver an lokale Resolver (Pi-hole/Unbound) an.
 
 Then run the installer as above.
 
@@ -169,14 +187,14 @@ crontab -e
 
 ## ♻️ Auto-Update
 
-Java Edition:
+- Java Edition:
 
 ```bash
 cd /opt/minecraft
 ./update.sh
 ```
 
-Cron:
+- Cron:
 
 ```bash
 crontab -e
@@ -189,14 +207,14 @@ crontab -e
 
 ## ⚙️ Configuration
 
-**/etc/mc_backup.conf**
+### /etc/mc_backup.conf
 
-* `MC_SRC_DIR`: Java server path (`/opt/minecraft`)
-* `MC_BEDROCK_DIR`: Bedrock server path (`/opt/minecraft-bedrock`)
-* `BACKUP_DIR`: Backup target (`/var/backups/minecraft`)
-* `RETAIN_DAYS`: Retention days
+- `MC_SRC_DIR`: Java server path (`/opt/minecraft`)
+- `MC_BEDROCK_DIR`: Bedrock server path (`/opt/minecraft-bedrock`)
+- `BACKUP_DIR`: Backup target (`/var/backups/minecraft`)
+- `RETAIN_DAYS`: Retention days
 
-**JVM memory (Java)**
+### JVM memory (Java)
 Autosized by installer: `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` with floors `256M/448M`.
 Edit `/opt/minecraft/start.sh` to override:
 
@@ -205,40 +223,30 @@ Edit `/opt/minecraft/start.sh` to override:
 java -Xms2G -Xmx4G -jar server.jar nogui
 ```
 
-**Firewall**
+---
+
+### Integrity
+- **Java:** `server.jar` wird nach Download per **SHA256** verifiziert.
+- **Bedrock:** ZIP von Mojang wird per **SHA256** geprüft (Abbruch bei Mismatch).
+
+---
+
+## Firewall
 
 ```bash
 sudo apt-get install -y ufw
 sudo ufw allow 25565/tcp    # Java
 sudo ufw allow 19132/udp    # Bedrock
 sudo ufw enable
+
+# IPv6 (optional)
+sudo ufw allow 25565/tcp comment "Minecraft Java v6"
+sudo ufw allow 19132/udp comment "Minecraft Bedrock v6"
 ```
 
-### Integrity & Firewall
+---
 
-> Java downloads are SHA256-verified via PaperMC API.
-> Bedrock zip SHA256 is printed and, by default, enforced: set `REQUIRED_BEDROCK_SHA256` before running `setup_bedrock.sh`.
-
-* Java: TCP 25565
-* Bedrock: UDP 19132
-
-#### Bedrock checksum quick-setup
-
-You can capture and enforce the Bedrock ZIP checksum like this:
-
-```bash
-# 1) First run without enforcement to capture the printed SHA
-export REQUIRE_BEDROCK_SHA=0
-chmod +x setup_bedrock.sh
-./setup_bedrock.sh
-
-# 2) Copy the printed SHA256, then enforce it for subsequent runs
-export REQUIRED_BEDROCK_SHA256=<paste-sha-here>
-export REQUIRE_BEDROCK_SHA=1
-./setup_bedrock.sh
-```
-
-**Optional: systemd service (Java)**
+## Optional: systemd service (Java)
 
 ```bash
 sudo cp minecraft.service /etc/systemd/system/minecraft.service
@@ -246,27 +254,59 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now minecraft
 ```
 
+## Optional: systemd service (Bedrock)
+
+```bash
+sudo tee /etc/systemd/system/minecraft-bedrock.service >/dev/null <<'EOF'
+[Unit]
+Description=Minecraft Bedrock Server
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/minecraft-bedrock
+User=minecraft
+Group=minecraft
+ExecStart=/usr/bin/screen -DmS bedrock /bin/bash -lc './start.sh'
+ExecStop=/usr/bin/screen -S bedrock -X quit
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now minecraft-bedrock
+```
+
 ---
 
 ## 🕹️ Admin/Commands
 
-See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage, and common commands.
+- Siehe [SERVER_COMMANDS.md](SERVER_COMMANDS.md) für Operator-Setup, `screen`-Nutzung und Kommandos. (coming soon, falls nicht vorhanden)
 
 ---
 
 ## 🔧 Troubleshooting
 
-* Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; see `docs/BEDROCK_NETWORKING.md`.
-* Java 21 unavailable on Debian 11 → falls back to Amazon Corretto 21.
-* Missing `server.jar` → re-run installer or `update.sh`.
-* Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
+- Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; siehe [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md) (coming soon, falls nicht vorhanden)
+- Java 21 unavailable on Debian 11 → falls back to Amazon Corretto 21.
+- Missing `server.jar` → re-run installer or `update.sh`.
+- Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
 ---
 
 ## 🤝 Contributing
 
-* [Open an issue](../../issues)
-* Submit a Pull Request
+- [Open an issue](../../issues)
+- Submit a Pull Request
 
 ---
 
@@ -275,3 +315,15 @@ See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage,
 [MIT](LICENSE)
 
 > Proxmox helper: see `scripts/proxmox_create_ct_bedrock.sh` to auto-create a Debian 12 CT and install Bedrock (run on Proxmox host).
+> **Hinweis:** Das Proxmox-Helper-Skript unterstützt jetzt **Debian 12 und 13** (CT-Templates werden automatisch gewählt). Für andere Distributionen bitte Skript und Doku anpassen.
+
+---
+
+## ☕ Support / Donate
+
+If you find these tools useful and want to support development:
+
+- **Buy Me A Coffee:** [https://buymeacoffee.com/timintech](https://buymeacoffee.com/timintech)
+- Or click the badge at the top of this README.
+
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/timintech)
