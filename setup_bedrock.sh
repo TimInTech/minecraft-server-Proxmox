@@ -7,7 +7,7 @@ mkdir -p /opt/minecraft-bedrock
 chown -R minecraft:minecraft /opt/minecraft-bedrock
 cd /opt/minecraft-bedrock
 HTML="$(curl -fsSL https://www.minecraft.net/en-us/download/server/bedrock)"
-LATEST_URL="$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)"
+LATEST_URL="$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+'\.zip' | head -1)"
 if [[ -z "${LATEST_URL:-}" ]]; then echo "ERROR: Could not find Bedrock server URL"; exit 1; fi
 curl -fsSI "$LATEST_URL" | grep -iqE '^content-type:\s*application/zip' || { echo "ERROR: unexpected content-type"; exit 1; }
 echo "Downloading: $LATEST_URL"
@@ -15,7 +15,7 @@ wget -O bedrock-server.zip "$LATEST_URL"
 ACTUAL_SHA="$(sha256sum bedrock-server.zip | awk '{print $1}')"
 echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"
 if [[ "${REQUIRE_BEDROCK_SHA:=1}" = "1" ]]; then
-  if [[ -z "${REQUIRED_BEDROCK_SHA256:-}" ]]; then
+  if [[ -z "${REQUIRED_BEDROOCK_SHA256:-}" ]]; then
     echo "ERROR: Set REQUIRED_BEDROCK_SHA256 to a known-good value (export REQUIRED_BEDROCK_SHA256=<sha>)"
     exit 1
   fi

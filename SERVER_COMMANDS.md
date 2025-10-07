@@ -211,11 +211,11 @@ enable-command-block=true
 | Command                              | Description                    |                                      |
 | ------------------------------------ | ------------------------------ | ------------------------------------ |
 | /setmaxplayers                       | Sets maximum number of players |                                      |
-| /ability  fly \<true                 | false>                         | Enables/disables flying for a player |
+| /ability  fly \<true                | false>                         | Enables/disables flying for a player |
 | /structure save                      | Saves a structure              |                                      |
 | /structure load  \~ \~ \~            | Loads a saved structure        |                                      |
 | /event entity @e minecraft\:on\_fire | Triggers an entity event       |                                      |
-| /camera shake @a 3 5                 | Creates a camera shake effect  |                                      |
+| /camera shake @a 3 5                 | Creates a camera shake effect  |
 
 ---
 

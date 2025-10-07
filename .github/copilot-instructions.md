@@ -155,7 +155,3 @@ gh pr create --fill --title "Refactor (simulation)" --body "Simulation-mode chan
 * In Antworten immer klarstellen: Beispiele dienen externer Ausführung.
 * Für Schritt-für-Schritt-Effekte der Skripte siehe `SIMULATION.md`.
 * CI-Erweiterungen (ShellCheck, Markdown-Lint, Link-Check) bitte in separatem PR ergänzen.
-
-
-::contentReference[oaicite:0]{index=0}
-
