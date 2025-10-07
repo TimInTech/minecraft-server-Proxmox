@@ -14,22 +14,35 @@ cd /opt/minecraft-bedrock
 
 # Letzte Bedrock-URL ermitteln
 HTML="$(curl -fsSL https://www.minecraft.net/en-us/download/server/bedrock)"
-LATEST_URL="$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -n1 || true)"
+LATEST_URL="$(printf '%s' "$HTML" | grep -Eo 'https://[^"[:space:]]*bedrock-server-[0-9.]+\.zip' | head -n1 || true)"
 if [[ -z "${LATEST_URL}" ]]; then
   echo "ERROR: Could not find Bedrock server URL" >&2
   exit 1
 fi
 
-# Content-Type prüfen (robust gegen CR in Headern)
-if ! curl -fsSI "$LATEST_URL" | tr -d '\r' | grep -iqE '^content-type:\s*application/zip'; then
+# Content-Type prüfen (robust gegen CR in Headern, folgt Redirects)
+HEAD_OUT="$(curl -fsSIL "$LATEST_URL" | tr -d '\r')"
+if ! printf '%s' "$HEAD_OUT" | grep -iqE '^content-type:\s*(application/zip|application/octet-stream)(\s*;|$)'; then
   echo "ERROR: unexpected content-type for $LATEST_URL" >&2
+  echo "Got headers:" >&2
+  printf '%s\n' "$HEAD_OUT" >&2
+  exit 1
+fi
+# Optional: Content-Length prüfen, falls vorhanden und numerisch
+CLEN="$(printf '%s' "$HEAD_OUT" | awk -F': ' 'tolower($1)=="content-length"{print $2}' | tr -d '[:space:]')"
+if [[ -n "$CLEN" && "$CLEN" =~ ^[0-9]+$ && "$CLEN" -le 0 ]]; then
+  echo "ERROR: content-length reported as $CLEN for $LATEST_URL" >&2
   exit 1
 fi
 
-echo "Downloading: $LATEST_URL"
-wget -qO bedrock-server.zip "$LATEST_URL"
+# Sicherer Download in temporäre Datei
+TMP_ZIP="$(mktemp -p /tmp bedrock-server.XXXXXX.zip)"
+trap 'rm -f "$TMP_ZIP"' EXIT
 
-ACTUAL_SHA="$(sha256sum bedrock-server.zip | awk '{print $1}')"
+echo "Downloading: $LATEST_URL"
+wget -qO "$TMP_ZIP" "$LATEST_URL"
+
+ACTUAL_SHA="$(sha256sum "$TMP_ZIP" | awk '{print $1}')"
 echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"
 
 : "${REQUIRE_BEDROCK_SHA:=1}"
@@ -45,15 +58,15 @@ if [[ "${REQUIRE_BEDROCK_SHA}" = "1" ]]; then
 fi
 
 # ZIP testen & entpacken
-unzip -tq bedrock-server.zip >/dev/null
-unzip -oq bedrock-server.zip
-rm -f bedrock-server.zip
+unzip -tq "$TMP_ZIP" >/dev/null
+unzip -oq "$TMP_ZIP"
 
 # Binärdatei vorhanden?
-if [[ ! -x ./bedrock_server && ! -f ./bedrock_server ]]; then
+if [[ ! -f ./bedrock_server ]]; then
   echo "ERROR: bedrock_server missing after extraction" >&2
   exit 1
 fi
+chmod +x ./bedrock_server || true
 
 # Startskript
 cat > start.sh <<'EOF'
