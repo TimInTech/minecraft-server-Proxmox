@@ -1,5 +1,7 @@
 # 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-09-02)
 
+![Minecraft Server on Proxmox](assets/banner.png)
+
 <p align="center">
   <em>Minecraft Server on Proxmox</em>
 </p>
@@ -219,6 +221,22 @@ sudo ufw enable
 
 * Java: TCP 25565
 * Bedrock: UDP 19132
+
+#### Bedrock checksum quick-setup
+
+You can capture and enforce the Bedrock ZIP checksum like this:
+
+```bash
+# 1) First run without enforcement to capture the printed SHA
+export REQUIRE_BEDROCK_SHA=0
+chmod +x setup_bedrock.sh
+./setup_bedrock.sh
+
+# 2) Copy the printed SHA256, then enforce it for subsequent runs
+export REQUIRED_BEDROCK_SHA256=<paste-sha-here>
+export REQUIRE_BEDROCK_SHA=1
+./setup_bedrock.sh
+```
 
 **Optional: systemd service (Java)**
 
