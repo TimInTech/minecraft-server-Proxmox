@@ -190,6 +190,7 @@ Small: `-Xms1G -Xmx2G`, Medium: `-Xms2G -Xmx4G`.
 
 **Firewall**
 ```bash
+sudo apt-get install -y ufw
 sudo ufw allow 25565/tcp    # Java
 sudo ufw allow 19132/udp    # Bedrock
 sudo ufw enable
@@ -206,6 +207,7 @@ sudo ufw enable
 
 Example UFW:
 ```bash
+sudo apt-get install -y ufw
 sudo ufw allow 25565/tcp
 sudo ufw allow 19132/udp
 sudo ufw enable
