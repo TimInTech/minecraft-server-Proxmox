@@ -1,7 +1,7 @@
 # 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-09-02)
 
 <p align="center">
-  <img src="assets/banner.png" alt="Minecraft Server on Proxmox" />
+  <em>Minecraft Server on Proxmox</em>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@ Designed for both VMs and LXC containers, it provides easy CLI-first installatio
 Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 > Note for this workspace: Simulation only
-> In this development environment we do not execute or install anything. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
+> We do not execute or install anything here. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
 
 ---
 
@@ -53,7 +53,9 @@ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/s
 chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
 ```
+
 Open console:
+
 ```bash
 sudo -u minecraft screen -r minecraft
 ```
@@ -75,6 +77,7 @@ network:
 YAML
 sudo netplan apply
 ```
+
 Then run the installer as above.
 
 ### LXC/CT
@@ -84,7 +87,9 @@ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/s
 chmod +x setup_minecraft_lxc.sh
 ./setup_minecraft_lxc.sh
 ```
+
 Open console:
+
 ```bash
 sudo -u minecraft screen -r minecraft
 ```
@@ -96,7 +101,9 @@ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/s
 chmod +x setup_bedrock.sh
 ./setup_bedrock.sh
 ```
+
 Open console:
+
 ```bash
 sudo -u minecraft screen -r bedrock
 ```
@@ -141,7 +148,9 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable --now mc-backup.timer
 ```
+
 On-demand:
+
 ```bash
 sudo systemctl start mc-backup.service
 ```
@@ -158,37 +167,44 @@ crontab -e
 
 ## ♻️ Auto-Update
 
-Java Edition:  
+Java Edition:
+
 ```bash
 cd /opt/minecraft
 ./update.sh
 ```
+
 Cron:
+
 ```bash
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
-> Bedrock requires manual download from Mojang (`bedrock_helper.sh` gives reminder message).
+
+> Bedrock requires manual download from Mojang (`setup_bedrock.sh` enforces checksum; see below).
 
 ---
 
 ## ⚙️ Configuration
 
 **/etc/mc_backup.conf**
+
 * `MC_SRC_DIR`: Java server path (`/opt/minecraft`)
 * `MC_BEDROCK_DIR`: Bedrock server path (`/opt/minecraft-bedrock`)
 * `BACKUP_DIR`: Backup target (`/var/backups/minecraft`)
 * `RETAIN_DAYS`: Retention days
 
-**JVM memory (Java)**  
-Edit `/opt/minecraft/start.sh`:
+**JVM memory (Java)**
+Autosized by installer: `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` with floors `256M/448M`.
+Edit `/opt/minecraft/start.sh` to override:
+
 ```bash
 #!/bin/bash
 java -Xms2G -Xmx4G -jar server.jar nogui
 ```
-Small: `-Xms1G -Xmx2G`, Medium: `-Xms2G -Xmx4G`.
 
 **Firewall**
+
 ```bash
 sudo apt-get install -y ufw
 sudo ufw allow 25565/tcp    # Java
@@ -198,22 +214,14 @@ sudo ufw enable
 
 ### Integrity & Firewall
 
-> Integrity: Java downloads are SHA256-verified via PaperMC API.  
-> Bedrock has no official checksum; the installer prints the archive’s SHA256.  
-> Enforce a known value by exporting `REQUIRED_BEDROCK_SHA256=<sha256>` before running `setup_bedrock.sh`.
+> Java downloads are SHA256-verified via PaperMC API.
+> Bedrock zip SHA256 is printed and, by default, enforced: set `REQUIRED_BEDROCK_SHA256` before running `setup_bedrock.sh`.
 
-- Java: TCP 25565
-- Bedrock: UDP 19132
-
-Example UFW:
-```bash
-sudo apt-get install -y ufw
-sudo ufw allow 25565/tcp
-sudo ufw allow 19132/udp
-sudo ufw enable
-```
+* Java: TCP 25565
+* Bedrock: UDP 19132
 
 **Optional: systemd service (Java)**
+
 ```bash
 sudo cp minecraft.service /etc/systemd/system/minecraft.service
 sudo systemctl daemon-reload
@@ -229,10 +237,10 @@ See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage,
 ---
 
 ## 🔧 Troubleshooting
-* Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; see `docs/BEDROCK_NETWORKING.md`.
 
-* Java 21 unavailable on Debian 11 → falls back to OpenJDK 17.
-* Missing `start.sh` → recreate as shown above and `chmod +x start.sh`.
+* Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; see `docs/BEDROCK_NETWORKING.md`.
+* Java 21 unavailable on Debian 11 → falls back to Amazon Corretto 21.
+* Missing `server.jar` → re-run installer or `update.sh`.
 * Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
 ---
@@ -241,14 +249,6 @@ See [SERVER_COMMANDS.md](SERVER_COMMANDS.md) for operator setup, `screen` usage,
 
 * [Open an issue](../../issues)
 * Submit a Pull Request
-
----
-
-## 📚 References
-
-* PaperMC: [https://papermc.io/](https://papermc.io/)
-* Mojang Bedrock Downloads: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
-* Proxmox Docs: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
 
 ---
 
