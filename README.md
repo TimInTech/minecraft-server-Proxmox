@@ -17,7 +17,7 @@
 ---
 
 ## ✅ Requirements
-- Proxmox VE: 7.4+ oder 8.x
+- Proxmox VE: 7.4+ / 8.x / 9.x
 - Gast-OS: Debian 12/13 oder Ubuntu 24.04
 - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
@@ -38,7 +38,7 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## 🧩 Technologies & Dependencies
 
-- Proxmox VE 7.4+ / 8.x
+- Proxmox VE 7.4+ / 8.x / 9.x
 - Debian 12/13, Ubuntu 24.04
 - Java 21 (Default), 17 (Fallback)
 - Minecraft Java & Bedrock
