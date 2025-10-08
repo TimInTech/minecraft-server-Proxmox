@@ -1,6 +1,7 @@
 [Unit]
 Description=Minecraft Server (Paper)
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 User=minecraft
@@ -9,6 +10,8 @@ WorkingDirectory=/opt/minecraft
 ExecStart=/usr/bin/bash /opt/minecraft/start.sh
 Restart=on-failure
 UMask=0027
+SuccessExitStatus=0 143
+TimeoutStopSec=30
 
 NoNewPrivileges=true
 ProtectSystem=full

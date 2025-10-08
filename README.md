@@ -34,15 +34,9 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 > Note for this workspace: Simulation only
 > We do not execute or install anything here. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
 
----
 
 ## 🧩 Technologies & Dependencies
 
-- Proxmox VE 7.4+ / 8.x / 9.x
-- Debian 12/13, Ubuntu 24.04
-- Java 21 (Default), 17 (Fallback)
-- Minecraft Java & Bedrock
-- Bash, systemd, screen
 
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
 ![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012%20%2F%2013-A81D33?logo=debian&logoColor=white)
@@ -53,14 +47,10 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 ![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
 ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
----
 
 ## 📊 Status
 
-- ShellCheck linting workflow ist unter `.github/workflows/shellcheck.yml` vorhanden.
-- Weitere Tests oder Deployment-Workflows nach Bedarf ergänzen.
 
----
 
 ## 🚀 Quickstart
 
@@ -76,6 +66,20 @@ Open console:
 
 ```bash
 sudo -u minecraft screen -r minecraft
+```
+
+> Hinweis (Debian 12/13): screen benötigt `/run/screen` mit root:utmp und 0775. Persistenz nach Reboot:
+
+> ```bash
+> sudo install -d -m 0775 -o root -g utmp /run/screen
+> printf 'd /run/screen 0775 root utmp -\n' | sudo tee /etc/tmpfiles.d/screen.conf
+> sudo systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf
+> ```
+
+### Empfohlen (Java): systemd statt screen
+
+```bash
+sudo cp minecraft.service /etc/systemd/system/minecraft.service && sudo systemctl daemon-reload && sudo systemctl enable --now minecraft
 ```
 
 ### VM (Static IP)
@@ -128,7 +132,6 @@ Open console:
 sudo -u minecraft screen -r bedrock
 ```
 
----
 
 ## 🗃️ Backups
 
@@ -183,18 +186,15 @@ crontab -e
 45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
 ```
 
----
 
 ## ♻️ Auto-Update
 
-- Java Edition:
 
 ```bash
 cd /opt/minecraft
 ./update.sh
 ```
 
-- Cron:
 
 ```bash
 crontab -e
@@ -203,18 +203,17 @@ crontab -e
 
 > Bedrock requires manual download from Mojang (`setup_bedrock.sh` enforces checksum; see below).
 
----
+
+**Bedrock Sicherheit:** `setup_bedrock.sh` erzwingt per Default eine SHA256-Prüfung. Setze `REQUIRED_BEDROCK_SHA256` vor dem Run; oder überschreibe mit `REQUIRE_BEDROCK_SHA=0`.
 
 ## ⚙️ Configuration
 
 ### /etc/mc_backup.conf
 
-- `MC_SRC_DIR`: Java server path (`/opt/minecraft`)
-- `MC_BEDROCK_DIR`: Bedrock server path (`/opt/minecraft-bedrock`)
-- `BACKUP_DIR`: Backup target (`/var/backups/minecraft`)
-- `RETAIN_DAYS`: Retention days
+
 
 ### JVM memory (Java)
+
 Autosized by installer: `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` with floors `256M/448M`.
 Edit `/opt/minecraft/start.sh` to override:
 
@@ -223,13 +222,9 @@ Edit `/opt/minecraft/start.sh` to override:
 java -Xms2G -Xmx4G -jar server.jar nogui
 ```
 
----
 
 ### Integrity
-- **Java:** `server.jar` wird nach Download per **SHA256** verifiziert.
-- **Bedrock:** ZIP von Mojang wird per **SHA256** geprüft (Abbruch bei Mismatch).
 
----
 
 ## Firewall
 
@@ -244,7 +239,6 @@ sudo ufw allow 25565/tcp comment "Minecraft Java v6"
 sudo ufw allow 19132/udp comment "Minecraft Bedrock v6"
 ```
 
----
 
 ## Optional: systemd service (Java)
 
@@ -286,29 +280,18 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now minecraft-bedrock
 ```
 
----
 
 ## 🕹️ Admin/Commands
 
-- Siehe [SERVER_COMMANDS.md](SERVER_COMMANDS.md) für Operator-Setup, `screen`-Nutzung und Kommandos. (coming soon, falls nicht vorhanden)
 
----
 
 ## 🔧 Troubleshooting
 
-- Bedrock LAN discovery stuck at "Loading ping" → ensure bridged vmbr0 and UDP 19132; siehe [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md) (coming soon, falls nicht vorhanden)
-- Java 21 unavailable on Debian 11 → falls back to Amazon Corretto 21.
-- Missing `server.jar` → re-run installer or `update.sh`.
-- Permission issues → ensure ownership of `/opt/minecraft*` or use `sudo`.
 
----
 
 ## 🤝 Contributing
 
-- [Open an issue](../../issues)
-- Submit a Pull Request
 
----
 
 ## License
 
@@ -317,13 +300,10 @@ sudo systemctl enable --now minecraft-bedrock
 > Proxmox helper: see `scripts/proxmox_create_ct_bedrock.sh` to auto-create a Debian 12 CT and install Bedrock (run on Proxmox host).
 > **Hinweis:** Das Proxmox-Helper-Skript unterstützt jetzt **Debian 12 und 13** (CT-Templates werden automatisch gewählt). Für andere Distributionen bitte Skript und Doku anpassen.
 
----
 
 ## ☕ Support / Donate
 
 If you find these tools useful and want to support development:
 
-- **Buy Me A Coffee:** [https://buymeacoffee.com/timintech](https://buymeacoffee.com/timintech)
-- Or click the badge at the top of this README.
 
 [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/timintech)
