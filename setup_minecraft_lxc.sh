@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Festlegbare Minecraft-Version (Default, kann per ENV überschrieben werden)
+MC_VER="${MC_VER:-1.21.10}"
+
 apt update && apt upgrade -y
 apt install -y screen wget curl jq unzip ca-certificates gnupg
 
@@ -14,8 +17,13 @@ ensure_java() {
 }
 ensure_java
 
-# screen socket dir (Debian expects root:utmp)
-install -d -m 0775 -o root -g utmp /run/screen || true
+# screen socket dir (Debian expects root:utmp) + Persistenz via tmpfiles
+install -d -m 0775 -o root -g utmp /run/screen
+printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
+systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
+
+# Optional: systemd bevorzugen (Fallback screen)
+USE_SYSTEMD="${USE_SYSTEMD:-1}"
 
 # user & dir
 if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
@@ -25,14 +33,14 @@ cd /opt/minecraft
 # EULA
 echo "eula=true" > eula.txt
 
-# Download latest Paper (with SHA256 verification)
-LATEST_VERSION="$(curl -fsSL https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')"
-LATEST_BUILD="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}" | jq -r '.builds | last')"
-BUILD_JSON="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")"
+# Download Paper für $MC_VER (SHA256 + Mindestgröße)
+LATEST_BUILD="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}" | jq -r '.builds | last')"
+BUILD_JSON="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}")"
 EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
 JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
 
-wget -qO server.jar "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+wget -qO server.jar "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+[ "$(stat -c%s server.jar)" -gt 5000000 ] || { echo "ERROR: server.jar zu klein/ungültig" >&2; exit 1; }
 ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
 if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ] && [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
   echo "ERROR: PaperMC SHA256 mismatch (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
@@ -52,11 +60,48 @@ E2
 chown minecraft:minecraft start.sh eula.txt
 chmod +x start.sh
 
-# Start in screen
-if command -v runuser >/dev/null 2>&1; then
-  runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -DmS minecraft ./start.sh'
+if [ "$USE_SYSTEMD" = "1" ]; then
+  cat > /etc/systemd/system/minecraft.service <<'EOF'
+[Unit]
+Description=Minecraft Server (Paper)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=minecraft
+Group=minecraft
+WorkingDirectory=/opt/minecraft
+ExecStart=/usr/bin/bash /opt/minecraft/start.sh
+SuccessExitStatus=0 143
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/opt/minecraft
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now minecraft
 else
-  su -s /bin/bash -c 'cd /opt/minecraft && screen -DmS minecraft ./start.sh' minecraft
+  # Start in screen (Fallback)
+  if command -v runuser >/dev/null 2>&1; then
+    runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -DmS minecraft ./start.sh'
+  else
+    su -s /bin/bash -c 'cd /opt/minecraft && screen -DmS minecraft ./start.sh' minecraft
+  fi
 fi
 
 echo "✅ Minecraft Java setup complete (LXC). Attach: screen -r minecraft"
