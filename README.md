@@ -226,5 +226,5 @@ For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 
 [MIT](LICENSE)
 
-> Proxmox Helper: `scripts/proxmox_create_ct_bedrock.sh` erstellt Debian-12/13-CT und installiert Bedrock.
+> Proxmox Helper: `scripts/proxmox_create_ct_bedrock.sh` creates a Debian 12/13 container and installs Bedrock.
 
