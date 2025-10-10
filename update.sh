@@ -5,7 +5,7 @@ set -euo pipefail
 cd /opt/minecraft || exit 1
 
 LATEST_VERSION=$(curl -fsSL https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
-LATEST_BUILD=$(curl -fsSL https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
+LATEST_BUILD=$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}" | jq -r '.builds | last')
 BUILD_JSON=$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
 EXPECTED_SHA=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')
 JAR_NAME=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')
