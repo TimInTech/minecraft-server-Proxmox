@@ -1,0 +1,601 @@
+commit 6dc9ff1a28d0ed96090ccf8a64bc8a0b0a262a77
+Author: TimInTech <gummiflip@outlook.de>
+Date:   Fri Oct 10 12:14:40 2025 +0200
+
+    maint: Debian 13 support, English docs, checksum enforcement, systemd hardening
+
+diff --git a/README.md b/README.md
+index 6592f99..e435114 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
++# Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
+ 
+ <img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
+ 
+@@ -14,30 +14,36 @@
+ 
+ ---
+ 
+-## 🔗 Quick Links
+-- 📜 **Server Commands**: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
+-- 🧪 **Simulation guide**: [SIMULATION.md](SIMULATION.md)
+-- 🌐 **Bedrock Networking**: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
+-- 🤖 **Copilot Workflow**: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+-- 🐞 **Issues & Feedback**: [Open an issue](../../issues)
++## Quick Links
++
++- Server Commands: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
++- Simulation Guide: [SIMULATION.md](SIMULATION.md)
++- Bedrock Networking: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
++- Copilot Workflow: [.github/copilot-instructions.md](.github/copilot-instructions.md)
++- Issues & Feedback: [Open an issue](../../issues)
+ 
+ ---
+ 
+-## ✅ Requirements
++## Requirements
++
+ - Proxmox VE: 7.4+ / 8.x / 9.x
+-- Gast-OS: Debian 12/13 oder Ubuntu 24.04
++- Guest OS: Debian 11/12/13 or Ubuntu 24.04
+ - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
+ - Storage: ≥10 GB SSD
+-- Netzwerk: Bridged NIC (vmbr0), Ports 25565/TCP, 19132/UDP
++- Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
++
++Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
+ 
+ ---
+ 
+-## 📝 Introduction
+-Dieses Repo stellt in Minuten einen performanten Minecraft-Server (Java & Bedrock) auf Proxmox bereit. VM und LXC werden unterstützt. CLI-First Setup, Update-Skript, Backup-Beispiele.
++## Introduction
++
++This repository provisions a performant Minecraft server (Java & Bedrock) on Proxmox in minutes. VM and LXC are supported. CLI-first setup, updater, and backup examples are provided.
++
++> Simulation only: Do not execute commands in this workspace. See SIMULATION.md.
+ 
+-> Simulation only: Keine Ausführung hier. Siehe **SIMULATION.md**.
++## Technologies & Dependencies
+ 
+-## 🧩 Technologies & Dependencies
+ ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
+ ![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012%20%2F%2013-A81D33?logo=debian&logoColor=white)
+ ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
+@@ -47,20 +53,22 @@ Dieses Repo stellt in Minuten einen performanten Minecraft-Server (Java & Bedroc
+ ![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
+ ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
+ 
+-## 📊 Status
+-Stabil. LXC/VM getestet. Bedrock Update manuell.
++## Status
+ 
+-## 🚀 Quickstart
++Stable. VM and LXC tested. Bedrock updates remain manual.
++
++## Quickstart
+ 
+ ### VM (DHCP)
++
+ ```bash
+ wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
+ chmod +x setup_minecraft.sh
+ ./setup_minecraft.sh
+ sudo -u minecraft screen -r minecraft
+-````
++```
+ 
+-> Debian 12/13: `/run/screen` mit `root:utmp` und `0775` (siehe unten).
++> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
+ 
+ ### VM (Static IP)
+ 
+@@ -95,7 +103,7 @@ chmod +x setup_bedrock.sh
+ sudo -u minecraft screen -r bedrock
+ ```
+ 
+-## 🗃️ Backups
++## Backups
+ 
+ ### Option A: systemd
+ 
+@@ -141,7 +149,7 @@ crontab -e
+ 45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
+ ```
+ 
+-## ♻️ Auto-Update
++## Auto-Update (Java)
+ 
+ ```bash
+ cd /opt/minecraft && ./update.sh
+@@ -149,26 +157,27 @@ crontab -e
+ 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
+ ```
+ 
+-> Bedrock erfordert manuellen Download. `setup_bedrock.sh` erzwingt SHA256 (siehe unten).
++> Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
+ 
+-## ⚙️ Configuration
++## Configuration
+ 
+ ### JVM memory (Java)
+ 
+-Installer setzt `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` mit Floors `256M/448M`. Override in `/opt/minecraft/start.sh`.
++The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
+ 
+-## 🧾 Integrity & Firewall
++## Integrity & Firewall
+ 
+ **Java (PaperMC):**
+ 
+-* Paper-Download mit **SHA256-Verifikation** im Installer/Updater.
+-* Mindestgröße `server.jar > 5 MB` als HTML-Fehlschutz.
++- Paper download is verified via **SHA256** in installer/updater.
++- Minimum size `server.jar > 5 MB` to avoid saving HTML error pages.
+ 
+ **Bedrock:**
+ 
+-* Standard: `REQUIRE_BEDROCK_SHA=1`. Setze `REQUIRED_BEDROCK_SHA256=<sha>`. Override möglich mit `REQUIRE_BEDROCK_SHA=0`.
++- Default: `REQUIRE_BEDROCK_SHA=1`. Set `REQUIRED_BEDROCK_SHA256=<sha>`. Override with `REQUIRE_BEDROCK_SHA=0`.
++- The installer validates MIME type via HTTP HEAD (application/zip|octet-stream), checks size, and tests the ZIP via `unzip -tq` before extracting.
+ 
+-**screen Socket (Debian 12/13):**
++**screen socket (Debian 11/12/13):**
+ 
+ ```bash
+ sudo install -d -m 0775 -o root -g utmp /run/screen
+@@ -185,25 +194,27 @@ sudo ufw allow 19132/udp
+ sudo ufw enable
+ ```
+ 
+-## 🕹️ Admin/Commands
++## Admin/Commands
++
++See **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
+ 
+-Siehe **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
++## Troubleshooting
+ 
+-## 🔧 Troubleshooting
++- Not enough RAM in LXC → reduce values in `start.sh`.
++- Missing `/run/screen` → follow the "screen socket" section above.
++- Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
+ 
+-* Zu wenig RAM in LXC → `start.sh` Werte reduzieren.
+-* Kein `/run/screen` → Abschnitt „screen Socket“ ausführen.
+-* Bedrock-ZIP MIME-Type Fehler → Mojang-Seite erneut prüfen.
++## Contributing
+ 
+-## 🤝 Contributing
++Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
+ 
+-PR-Vorlage nutzen. Keine Ausführung in diesem Workspace. Siehe **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
++For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
+ 
+-## 📚 References
++## References
+ 
+-* PaperMC: [https://papermc.io/](https://papermc.io/)
+-* Proxmox Wiki: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
+-* Mojang Bedrock Server: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
++- PaperMC: [https://papermc.io/](https://papermc.io/)
++- Proxmox Wiki: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
++- Mojang Bedrock Server: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
+ 
+ ## License
+ 
+diff --git a/SIMULATION.md b/SIMULATION.md
+index fb2160d..fb84677 100644
+--- a/SIMULATION.md
++++ b/SIMULATION.md
+@@ -35,11 +35,11 @@ The descriptions below explain the side effects, created files, and expected out
+ Installs a PaperMC-based Java server under /opt/minecraft.
+ 
+ - Packages: apt update/upgrade, installs screen, wget, curl, jq, unzip.
+-- Java: attempts OpenJDK 21; if unavailable, falls back to OpenJDK 17 (headless).
++- Java: attempts OpenJDK 21; if unavailable, falls back to Amazon Corretto 21 via APT keyring.
+ - Filesystem: creates /opt/minecraft owned by the invoking user; changes into that directory.
+-- Download: queries PaperMC API via curl+jq to get LATEST_VERSION and LATEST_BUILD; downloads server.jar accordingly.
++- Download: queries PaperMC API via curl+jq to get LATEST_VERSION and LATEST_BUILD; downloads server.jar accordingly with SHA256 verification and minimum size >5MB.
+ - EULA: writes eula.txt with eula=true.
+-- Start script: creates start.sh (java -Xms2G -Xmx4G -jar server.jar nogui) and marks it executable.
++- Start script: creates start.sh with auto-sized memory (Xms≈RAM/4, Xmx≈RAM/2; floors 256M/448M; cap ≤16G) and marks it executable.
+ - Update script: writes update.sh to refresh server.jar to latest build; marks it executable.
+ - Runtime: starts the server in a detached GNU screen session named minecraft.
+ 
+@@ -64,8 +64,8 @@ Idempotency:
+ Similar to the VM installer but uses apt without sudo (typical for privileged containers) and does not write an update.sh. It:
+ 
+ - Updates packages, installs screen, wget, curl, jq, unzip.
+-- Installs OpenJDK 21 or falls back to 17.
+-- Sets up /opt/minecraft, downloads latest PaperMC server.jar.
++- Installs OpenJDK 21 or falls back to Amazon Corretto 21 via APT keyring.
++- Sets up /opt/minecraft, downloads latest PaperMC server.jar with SHA256 verification and minimum size >5MB.
+ - Accepts EULA and creates start.sh.
+ - Starts screen session minecraft.
+ 
+@@ -84,8 +84,8 @@ Installs a Bedrock server under /opt/minecraft-bedrock.
+ 
+ - Packages: installs unzip, wget, screen, curl (with sudo).
+ - Filesystem: creates /opt/minecraft-bedrock and assigns to invoking user.
+-- Download: parses Mojang download page for the latest linux ZIP (azureedge) and downloads it.
+-- Validation: tests the ZIP with unzip -tq before extracting; extracts contents and removes ZIP.
++- Download: parses Mojang download page for the latest linux ZIP and downloads it after validating Content-Type via HTTP HEAD.
++- Validation: prints archive SHA256, enforces REQUIRED_BEDROCK_SHA256 by default (override with REQUIRE_BEDROCK_SHA=0), tests the ZIP with unzip -tq before extracting; extracts contents and removes ZIP.
+ - Start script: creates start.sh to run LD_LIBRARY_PATH=. ./bedrock_server.
+ - Runtime: starts a screen session bedrock running start.sh.
+ 
+@@ -104,22 +104,22 @@ Failure points:
+ Updates PaperMC server.jar to the latest available build.
+ 
+ - Assumes /opt/minecraft as working dir.
+-- Uses curl+jq to resolve latest version/build; downloads new server.jar.
++- Uses curl+jq to resolve latest version/build; downloads new server.jar with SHA256 verification and minimum size >5MB.
+ - Does not stop the server; best practice is to stop the server, back up, then update.
+ 
+ Safe update flow (suggested): stop server (screen -S minecraft -X stuff 'stop\n'), back up /opt/minecraft, run update.sh, then start start.sh again.
+ 
+ ### minecraft.service (Optional systemd unit – Java)
+ 
+-Defines a simple systemd service to run /opt/minecraft/start.sh as root at boot.
++Defines a hardened systemd service to run /opt/minecraft/start.sh as the minecraft user at boot.
+ 
+-- User=root, WorkingDirectory=/opt/minecraft, ExecStart=/opt/minecraft/start.sh.
++- User=minecraft, Group=minecraft, WorkingDirectory=/opt/minecraft, ExecStart=/opt/minecraft/start.sh.
+ - Installation (example, do not execute here):
+   - sudo cp minecraft.service /etc/systemd/system/minecraft.service
+   - sudo systemctl daemon-reload
+   - sudo systemctl enable --now minecraft
+ 
+-Consider customizing User to a non-root service account and hardening with systemd options (ProtectSystem, PrivateTmp, etc.).
++Includes hardening (NoNewPrivileges, ProtectSystem=full, PrivateTmp, etc.) and limits writes to /opt/minecraft only.
+ 
+ ### bedrock_helper.sh
+ 
+@@ -152,6 +152,7 @@ In this workspace:
+ 
+ ## Integrity & Firewall
+ 
+-> Integrity: Java downloads are SHA256-verified via PaperMC API.  
+-> Bedrock has no official checksum; the installer prints the archive’s SHA256.  
+-> Enforce a known value by exporting `REQUIRED_BEDROCK_SHA256=<sha256>` before running `setup_bedrock.sh`.
++> Integrity: Java downloads are SHA256-verified via PaperMC API with a minimum-size safeguard.  
++> Bedrock checksum is enforced by default. Export `REQUIRED_BEDROCK_SHA256=<sha256>` or set `REQUIRE_BEDROCK_SHA=0` to override.
++
++For Debian 12/13, ensure `/run/screen` exists with `root:utmp` and `0775`. You can persist it via systemd-tmpfiles.
+diff --git a/minecraft.service b/minecraft.service
+index e71a14b..bdb998c 100644
+--- a/minecraft.service
++++ b/minecraft.service
+@@ -6,10 +6,11 @@ After=network.target
+ User=minecraft
+ Group=minecraft
+ WorkingDirectory=/opt/minecraft
+-ExecStart=/usr/bin/bash /opt/minecraft/start.sh
++ExecStart=/opt/minecraft/start.sh
+ Restart=on-failure
+ UMask=0027
+ 
++# NOTE: Systemd hardening options to reduce attack surface
+ NoNewPrivileges=true
+ ProtectSystem=full
+ ProtectHome=true
+@@ -23,5 +24,8 @@ CapabilityBoundingSet=
+ AmbientCapabilities=
+ ReadWritePaths=/opt/minecraft
+ 
++# Optional: set RETAIN_DAYS via Environment or drop-in. Example cleanup after start:
++#ExecStartPost=/bin/bash -lc 'BACKUP_DIR=${BACKUP_DIR:-/var/backups/minecraft}; mkdir -p "$BACKUP_DIR"; find "$BACKUP_DIR" -type f -name "*.tar.gz" -mtime +"${RETAIN_DAYS:-7}" -delete'
++
+ [Install]
+ WantedBy=multi-user.target
+diff --git a/setup_bedrock.sh b/setup_bedrock.sh
+index 2c493c8..799c28b 100755
+--- a/setup_bedrock.sh
++++ b/setup_bedrock.sh
+@@ -1,42 +1,75 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
++
+ apt update
+ apt install -y unzip wget screen curl ca-certificates
++
+ if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
+ mkdir -p /opt/minecraft-bedrock
+ chown -R minecraft:minecraft /opt/minecraft-bedrock
+ cd /opt/minecraft-bedrock
+-HTML="$(curl -fsSL https://www.minecraft.net/en-us/download/server/bedrock)"
+-LATEST_URL="$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)"
+-if [[ -z "${LATEST_URL:-}" ]]; then echo "ERROR: Could not find Bedrock server URL"; exit 1; fi
+-curl -fsSI "$LATEST_URL" | grep -iqE '^content-type:\s*application/zip' || { echo "ERROR: unexpected content-type"; exit 1; }
++
++# Scrape Mojang page for the latest Linux ZIP link
++HTML=$(curl -fsSL "https://www.minecraft.net/en-us/download/server/bedrock")
++LATEST_URL=$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)
++if [[ -z "${LATEST_URL:-}" ]]; then
++  echo "ERROR: Could not find Bedrock server URL on Mojang page" >&2
++  exit 1
++fi
++
++# HEAD check for MIME type and optional size
++if ! curl -fsSI "$LATEST_URL" | grep -iqE '^content-type:\s*(application/zip|application/octet-stream)'; then
++  echo "ERROR: Unexpected Content-Type for Bedrock ZIP (must be application/zip or octet-stream)" >&2
++  exit 1
++fi
+ echo "Downloading: $LATEST_URL"
+-wget -O bedrock-server.zip "$LATEST_URL"
+-ACTUAL_SHA="$(sha256sum bedrock-server.zip | awk '{print $1}')"
++curl -fL --retry 3 --retry-delay 2 -o bedrock-server.zip "$LATEST_URL"
++zip_size=$(stat -c '%s' bedrock-server.zip)
++if (( zip_size < 1048576 )); then # 1MB sanity check
++  echo "ERROR: Downloaded bedrock-server.zip is too small (${zip_size} bytes)." >&2
++  exit 1
++fi
++
++ACTUAL_SHA=$(sha256sum bedrock-server.zip | awk '{print $1}')
+ echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"
++
++# NOTE: Enforce checksum by default; require REQUIRED_BEDROCK_SHA256 when REQUIRE_BEDROCK_SHA=1
+ if [[ "${REQUIRE_BEDROCK_SHA:=1}" = "1" ]]; then
+   if [[ -z "${REQUIRED_BEDROCK_SHA256:-}" ]]; then
+-    echo "ERROR: Set REQUIRED_BEDROCK_SHA256 to a known-good value (export REQUIRED_BEDROCK_SHA256=<sha>)"
++    echo "ERROR: Set REQUIRED_BEDROCK_SHA256 to a known-good value (export REQUIRED_BEDROCK_SHA256=<sha>)" >&2
+     exit 1
+   fi
+   if [[ "${ACTUAL_SHA}" != "${REQUIRED_BEDROCK_SHA256}" ]]; then
+-    echo "ERROR: SHA256 mismatch (expected ${REQUIRED_BEDROCK_SHA256}, got ${ACTUAL_SHA})"
++    echo "ERROR: SHA256 mismatch (expected ${REQUIRED_BEDROCK_SHA256}, got ${ACTUAL_SHA})" >&2
+     exit 1
+   fi
+ fi
++
++# Test and extract the archive
+ unzip -tq bedrock-server.zip >/dev/null
+ unzip -o bedrock-server.zip && rm -f bedrock-server.zip
+-[[ -x bedrock_server || -f bedrock_server ]] || { echo "ERROR: bedrock_server missing"; exit 1; }
++
++if [[ ! -f bedrock_server ]]; then
++  echo "ERROR: bedrock_server binary missing after extraction" >&2
++  exit 1
++fi
++
+ cat > start.sh <<'E2'
+ #!/usr/bin/env bash
+ exec env LD_LIBRARY_PATH=. ./bedrock_server
+ E2
+ chmod +x start.sh
++
+ chown -R minecraft:minecraft /opt/minecraft-bedrock
+-install -d -m 775 -o root -g utmp /run/screen || true
++
++# Ensure screen runtime directory exists with correct ownership and mode
++# NOTE: Required on Debian 12/13 so screen can create sockets.
++install -d -m 0775 -o root -g utmp /run/screen || true
++
+ if command -v runuser >/dev/null 2>&1; then
+   runuser -u minecraft -- bash -lc 'cd /opt/minecraft-bedrock && screen -dmS bedrock ./start.sh'
+ else
+   su -s /bin/bash -c 'cd /opt/minecraft-bedrock && screen -dmS bedrock ./start.sh' minecraft
+ fi
++
+ echo "✅ Setup complete. Attach: screen -r bedrock"
+diff --git a/setup_minecraft.sh b/setup_minecraft.sh
+index 6a08d8c..e85287a 100755
+--- a/setup_minecraft.sh
++++ b/setup_minecraft.sh
+@@ -1,33 +1,79 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
++
+ sudo apt update && sudo apt upgrade -y
+ sudo apt install -y screen wget curl jq unzip ca-certificates gnupg
++
+ ensure_java() {
++  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring.
+   if sudo apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
++  # NOTE: Adding a vendor APT source; restrict with signed-by keyring.
+   sudo install -d -m 0755 /usr/share/keyrings
+   curl -fsSL https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto.gpg
+   echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list >/dev/null
+   sudo apt-get update
+   sudo apt-get install -y java-21-amazon-corretto-jre || sudo apt-get install -y java-21-amazon-corretto-jdk
+ }
++
+ ensure_java
++
+ sudo mkdir -p /opt/minecraft
+ if ! id -u minecraft >/dev/null 2>&1; then sudo useradd -r -m -s /bin/bash minecraft; fi
+ sudo chown -R minecraft:minecraft /opt/minecraft
+ cd /opt/minecraft
+-echo "eula=true" > eula.txt
++
++printf '%s\n' "eula=true" > eula.txt
++
++# Autosize memory: Xms=RAM/4, Xmx=RAM/2; floors 256M/448M; cap Xmx ≤16G.
+ mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo); mem_mb=$((mem_kb/1024))
+-xmx=$(( mem_mb/2 )); ((xmx<2048)) && xmx=2048; ((xmx>16384)) && xmx=16384
+-xms=$(( mem_mb/4 )); ((xms<1024)) && xms=1024; ((xms>xmx)) && xms=$xmx
++xmx=$(( mem_mb/2 ))
++(( xmx < 448 )) && xmx=448
++(( xmx > 16384 )) && xmx=16384
++xms=$(( mem_mb/4 ))
++(( xms < 256 )) && xms=256
++(( xms > xmx )) && xms=$xmx
++
++# Download latest PaperMC with SHA256 verification and min-size check (>5MB).
++PAPER_API_ROOT="https://api.papermc.io/v2/projects/paper"
++LATEST_VERSION=$(curl -fsSL "$PAPER_API_ROOT" | jq -r '.versions | last')
++LATEST_BUILD=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}" | jq -r '.builds | last')
++BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
++EXPECTED_SHA=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')
++JAR_NAME=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')
++DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
++
++# NOTE: Enforce integrity and basic size sanity to avoid HTML error pages saved as JAR.
++curl -fL --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
++ACTUAL_SHA=$(sha256sum server.jar | awk '{print $1}')
++if [[ -n "$EXPECTED_SHA" && "$EXPECTED_SHA" != "null" && "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
++  echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
++  exit 1
++fi
++jar_size=$(stat -c '%s' server.jar)
++if (( jar_size < 5242880 )); then
++  echo "ERROR: Downloaded server.jar is too small (${jar_size} bytes). Likely an error page." >&2
++  exit 1
++fi
++
+ cat > start.sh <<E2
+ #!/usr/bin/env bash
+ exec java -Xms${xms}M -Xmx${xmx}M -jar server.jar nogui
+ E2
+ chmod +x start.sh
+-sudo install -d -m 775 -o root -g utmp /run/screen || true
++
++# Ensure screen runtime directory exists with correct ownership and mode
++# NOTE: Required on Debian 12/13 so screen can create sockets.
++# Ensure screen runtime directory exists with correct ownership and mode
++# NOTE: Required on Debian 11/12/13 so screen can create sockets.
++sudo install -d -m 0775 -o root -g utmp /run/screen || true
++# NOTE: Persist /run/screen via systemd-tmpfiles to survive reboots
++printf 'd /run/screen 0775 root utmp -\n' | sudo tee /etc/tmpfiles.d/screen.conf >/dev/null
++sudo systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
++
+ if command -v runuser >/dev/null 2>&1; then
+   runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
+ else
+   sudo -u minecraft bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
+ fi
++
+ echo "✅ Minecraft Java setup complete. Attach: screen -r minecraft"
+diff --git a/setup_minecraft_lxc.sh b/setup_minecraft_lxc.sh
+index fb2dc00..64a9ab9 100755
+--- a/setup_minecraft_lxc.sh
++++ b/setup_minecraft_lxc.sh
+@@ -1,33 +1,77 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
++
+ apt update && apt upgrade -y
+ apt install -y screen wget curl jq unzip ca-certificates gnupg
++
+ ensure_java() {
++  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring (no sudo in LXC).
+   if apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
++  # NOTE: Adding a vendor APT source; restrict with signed-by keyring.
+   install -d -m 0755 /usr/share/keyrings
+   curl -fsSL https://apt.corretto.aws/corretto.key | gpg --dearmor -o /usr/share/keyrings/corretto.gpg
+   echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" > /etc/apt/sources.list.d/corretto.list
+   apt-get update
+   apt-get install -y java-21-amazon-corretto-jre || apt-get install -y java-21-amazon-corretto-jdk
+ }
++
+ ensure_java
++
+ mkdir -p /opt/minecraft
+ if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
+ chown -R minecraft:minecraft /opt/minecraft
+ cd /opt/minecraft
+-echo "eula=true" > eula.txt
++
++printf '%s\n' "eula=true" > eula.txt
++
++# Autosize memory: Xms=RAM/4, Xmx=RAM/2; floors 256M/448M; cap Xmx ≤16G.
+ mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo); mem_mb=$((mem_kb/1024))
+-xmx=$(( mem_mb/2 )); ((xmx<2048)) && xmx=2048; ((xmx>16384)) && xmx=16384
+-xms=$(( mem_mb/4 )); ((xms<1024)) && xms=1024; ((xms>xmx)) && xms=$xmx
++xmx=$(( mem_mb/2 ))
++(( xmx < 448 )) && xmx=448
++(( xmx > 16384 )) && xmx=16384
++xms=$(( mem_mb/4 ))
++(( xms < 256 )) && xms=256
++(( xms > xmx )) && xms=$xmx
++
++# Download latest PaperMC with SHA256 verification and min-size check (>5MB).
++PAPER_API_ROOT="https://api.papermc.io/v2/projects/paper"
++LATEST_VERSION=$(curl -fsSL "$PAPER_API_ROOT" | jq -r '.versions | last')
++LATEST_BUILD=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}" | jq -r '.builds | last')
++BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
++EXPECTED_SHA=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')
++JAR_NAME=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')
++DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
++
++# NOTE: Enforce integrity and basic size sanity to avoid HTML error pages saved as JAR.
++curl -fL --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
++ACTUAL_SHA=$(sha256sum server.jar | awk '{print $1}')
++if [[ -n "$EXPECTED_SHA" && "$EXPECTED_SHA" != "null" && "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
++  echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
++  exit 1
++fi
++jar_size=$(stat -c '%s' server.jar)
++if (( jar_size < 5242880 )); then
++  echo "ERROR: Downloaded server.jar is too small (${jar_size} bytes). Likely an error page." >&2
++  exit 1
++fi
++
+ cat > start.sh <<E2
+ #!/usr/bin/env bash
+ exec java -Xms${xms}M -Xmx${xmx}M -jar server.jar nogui
+ E2
+ chmod +x start.sh
+-install -d -m 775 -o root -g utmp /run/screen || true
++
++# Ensure screen runtime directory exists with correct ownership and mode
++# NOTE: Required on Debian 12/13 so screen can create sockets.
++install -d -m 0775 -o root -g utmp /run/screen || true
++# NOTE: Persist /run/screen via systemd-tmpfiles in CTs as well
++printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
++systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
++
+ if command -v runuser >/dev/null 2>&1; then
+   runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
+ else
+   su -s /bin/bash -c 'cd /opt/minecraft && screen -dmS minecraft ./start.sh' minecraft
+ fi
++
+ echo "✅ Minecraft Java setup complete (LXC). Attach: screen -r minecraft"
+diff --git a/update.sh b/update.sh
+index d909f44..e53290c 100644
+--- a/update.sh
++++ b/update.sh
+@@ -4,17 +4,23 @@ set -euo pipefail
+ 
+ cd /opt/minecraft || exit 1
+ 
+-LATEST_VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
+-LATEST_BUILD=$(curl -s https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
+-BUILD_JSON="$(curl -s "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")"
+-EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
+-JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
++LATEST_VERSION=$(curl -fsSL https://api.papermc.io/v2/projects/paper | jq -r '.versions | last')
++LATEST_BUILD=$(curl -fsSL https://api.papermc.io/v2/projects/paper/versions/"$LATEST_VERSION" | jq -r '.builds | last')
++BUILD_JSON=$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
++EXPECTED_SHA=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')
++JAR_NAME=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')
+ 
+-wget -O "server.jar" "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+-ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
+-if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ]; then
+-  if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+-    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})"
++curl -fL --retry 3 --retry-delay 2 -o "server.jar" "https://api.papermc.io/v2/projects/paper/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
++jar_size=$(stat -c '%s' server.jar)
++if (( jar_size < 5242880 )); then
++  echo "ERROR: Downloaded server.jar is too small (${jar_size} bytes). Likely an error page." >&2
++  exit 1
++fi
++
++ACTUAL_SHA=$(sha256sum server.jar | awk '{print $1}')
++if [[ -n "$EXPECTED_SHA" && "$EXPECTED_SHA" != "null" ]]; then
++  if [[ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
++    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
+     exit 1
+   fi
+   echo "SHA256 verified: ${ACTUAL_SHA}"
+@@ -22,4 +28,4 @@ else
+   echo "WARNING: No upstream SHA provided; computed: ${ACTUAL_SHA}"
+ fi
+ 
+-echo "✅ Update complete to version $LATEST_VERSION (build $LATEST_BUILD)"
++echo "✅ Update complete to version ${LATEST_VERSION} (build ${LATEST_BUILD})"
