@@ -8,13 +8,16 @@ apt update && apt upgrade -y
 apt install -y screen wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
+  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring (no sudo in LXC).
   if apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
+  # NOTE: Adding a vendor APT source; restrict with signed-by keyring.
   install -d -m 0755 /usr/share/keyrings
   curl -fsSL https://apt.corretto.aws/corretto.key | gpg --dearmor -o /usr/share/keyrings/corretto.gpg
   echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" > /etc/apt/sources.list.d/corretto.list
   apt-get update
   apt-get install -y java-21-amazon-corretto-jre || apt-get install -y java-21-amazon-corretto-jdk
 }
+
 ensure_java
 
 # screen socket dir (Debian expects root:utmp) + Persistenz via tmpfiles

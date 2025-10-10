@@ -75,6 +75,7 @@ set -euo pipefail
 exec env LD_LIBRARY_PATH=. ./bedrock_server
 EOF
 chmod +x start.sh
+
 chown -R minecraft:minecraft /opt/minecraft-bedrock
 
 # Start in screen

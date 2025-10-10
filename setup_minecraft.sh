@@ -8,6 +8,7 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y screen wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
+  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring.
   if sudo apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
   # Debian 13 Fallback: Amazon Corretto 21 (signiertes Repo)
   sudo install -d -m 0755 /usr/share/keyrings
@@ -16,6 +17,7 @@ ensure_java() {
   sudo apt-get update
   sudo apt-get install -y java-21-amazon-corretto-jre || sudo apt-get install -y java-21-amazon-corretto-jdk
 }
+
 ensure_java
 
 # screen socket dir (Debian erwartet root:utmp) + Persistenz via tmpfiles

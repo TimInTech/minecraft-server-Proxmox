@@ -7,12 +7,13 @@ Wants=network-online.target
 User=minecraft
 Group=minecraft
 WorkingDirectory=/opt/minecraft
-ExecStart=/usr/bin/bash /opt/minecraft/start.sh
+ExecStart=/opt/minecraft/start.sh
 Restart=on-failure
 UMask=0027
 SuccessExitStatus=0 143
 TimeoutStopSec=30
 
+# NOTE: Systemd hardening options to reduce attack surface
 NoNewPrivileges=true
 ProtectSystem=full
 ProtectHome=true
@@ -25,6 +26,9 @@ RestrictNamespaces=true
 CapabilityBoundingSet=
 AmbientCapabilities=
 ReadWritePaths=/opt/minecraft
+
+# Optional: set RETAIN_DAYS via Environment or drop-in. Example cleanup after start:
+#ExecStartPost=/bin/bash -lc 'BACKUP_DIR=${BACKUP_DIR:-/var/backups/minecraft}; mkdir -p "$BACKUP_DIR"; find "$BACKUP_DIR" -type f -name "*.tar.gz" -mtime +"${RETAIN_DAYS:-7}" -delete'
 
 [Install]
 WantedBy=multi-user.target

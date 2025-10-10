@@ -1,4 +1,4 @@
-# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
+# Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
 
 <img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
 
@@ -37,10 +37,12 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 ## ✅ Requirements
 - Proxmox VE: 7.4+ / 8.x / 9.x
-- Gast-OS: Debian 12/13 oder Ubuntu 24.04
+- Guest OS: Debian 11/12/13 or Ubuntu 24.04
 - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
-- Netzwerk: Bridged NIC (vmbr0), Ports 25565/TCP, 19132/UDP
+- Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
+
+Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
 
 
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
@@ -57,9 +59,12 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 
 
 
-## 🚀 Quickstart
+Stable. VM and LXC tested. Bedrock updates remain manual.
+
+## Quickstart
 
 ### VM (DHCP)
+
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
 chmod +x setup_minecraft.sh
@@ -70,9 +75,9 @@ Open console:
 
 ```bash
 sudo -u minecraft screen -r minecraft
-````
+```
 
-> Debian 12/13: `/run/screen` mit `root:utmp` und `0775` (siehe unten).
+> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
 
 > Hinweis (Debian 12/13): screen benötigt `/run/screen` mit root:utmp und 0775. Persistenz nach Reboot:
 
@@ -209,7 +214,7 @@ crontab -e
 
 **Bedrock Sicherheit:** `setup_bedrock.sh` erzwingt per Default eine SHA256-Prüfung. Setze `REQUIRED_BEDROCK_SHA256` vor dem Run; oder überschreibe mit `REQUIRE_BEDROCK_SHA=0`.
 
-## ⚙️ Configuration
+## Configuration
 
 ### /etc/mc_backup.conf
 
@@ -288,11 +293,11 @@ sudo systemctl enable --now minecraft-bedrock
 
 
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 
 
-## 🤝 Contributing
+## Contributing
 
 
 
