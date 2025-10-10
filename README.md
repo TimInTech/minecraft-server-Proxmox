@@ -33,7 +33,7 @@ Quick Links:
 - Issues — Open an issue
 
 
-## Requirements
+## ✅ Requirements
 - Proxmox VE: 7.4+ / 8.x / 9.x
 - Guest OS: Debian 11/12/13 or Ubuntu 24.04
 - CPU/RAM: ≥2 vCPU, ≥–4 GB RAM (Java), ≥–2 GB (Bedrock)
@@ -54,7 +54,7 @@ Quick Links:
 ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
 
-## Status
+## 📊 Status
 
 
 
@@ -140,7 +140,7 @@ sudo -u minecraft screen -r bedrock
 ```
 
 
-## Backups
+## 🗃 Backups
 
 ### Option A: systemd
 
@@ -193,7 +193,7 @@ crontab -e
 ```
 
 
-## Auto-Update
+## ♻ Auto-Update
 
 
 ```bash
@@ -246,7 +246,7 @@ sudo ufw allow 19132/udp comment "Minecraft Bedrock v6"
 ```
 
 
-## Admin/Commands
+## 🕹 Admin/Commands
 
 See [SERVER_COMMANDS.md](SERVER_COMMANDS.md).
 
@@ -265,7 +265,7 @@ See [.github/copilot-instructions.md](.github/copilot-instructions.md).
 [MIT](LICENSE)
 
 
-## Support / Donate
+## ☕ Support / Donate
 
 If you find these tools useful and want to support development:
 
