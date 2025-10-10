@@ -35,7 +35,12 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 > We do not execute or install anything here. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
 
 
-## 🧩 Technologies & Dependencies
+## ✅ Requirements
+- Proxmox VE: 7.4+ / 8.x / 9.x
+- Gast-OS: Debian 12/13 oder Ubuntu 24.04
+- CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
+- Storage: ≥10 GB SSD
+- Netzwerk: Bridged NIC (vmbr0), Ports 25565/TCP, 19132/UDP
 
 
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
@@ -55,7 +60,6 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 ## 🚀 Quickstart
 
 ### VM (DHCP)
-
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
 chmod +x setup_minecraft.sh
@@ -66,7 +70,9 @@ Open console:
 
 ```bash
 sudo -u minecraft screen -r minecraft
-```
+````
+
+> Debian 12/13: `/run/screen` mit `root:utmp` und `0775` (siehe unten).
 
 > Hinweis (Debian 12/13): screen benötigt `/run/screen` mit root:utmp und 0775. Persistenz nach Reboot:
 
@@ -91,11 +97,8 @@ network:
   ethernets:
     ens18:
       addresses: [192.168.1.50/24]
-      routes:
-        - to: default
-          via: 192.168.1.1
-      nameservers:
-        addresses: [1.1.1.1,8.8.8.8]
+      routes: [{ to: default, via: 192.168.1.1 }]
+      nameservers: { addresses: [1.1.1.1,8.8.8.8] }
 YAML
 sudo netplan apply
 ```
@@ -135,8 +138,6 @@ sudo -u minecraft screen -r bedrock
 
 ## 🗃️ Backups
 
-Backup worlds and server files before updates! Choose systemd or cron.
-
 ### Option A: systemd
 
 ```bash
@@ -156,6 +157,7 @@ EnvironmentFile=/etc/mc_backup.conf
 ExecStart=/bin/mkdir -p "${BACKUP_DIR}"
 ExecStart=/bin/bash -c 'tar -czf "${BACKUP_DIR}/java-$(date +%%F).tar.gz" "${MC_SRC_DIR}"'
 ExecStart=/bin/bash -c '[ -d "${MC_BEDROCK_DIR}" ] && tar -czf "${BACKUP_DIR}/bedrock-$(date +%%F).tar.gz" "${MC_BEDROCK_DIR}" || true'
+ExecStartPost=/bin/bash -c 'find "${BACKUP_DIR}" -type f -name "*.tar.gz" -mtime +"${RETAIN_DAYS:-7}" -delete'
 EOF
 
 sudo tee /etc/systemd/system/mc-backup.timer >/dev/null <<'EOF'
@@ -197,6 +199,7 @@ cd /opt/minecraft
 
 
 ```bash
+cd /opt/minecraft && ./update.sh
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
