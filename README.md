@@ -24,7 +24,7 @@
 
 ---
 
-## Requirements
+## ✅ Requirements
 
 - Proxmox VE: 7.4+ / 8.x / 9.x
 - Guest OS: Debian 11/12/13 or Ubuntu 24.04
@@ -53,7 +53,7 @@ This repository provisions a performant Minecraft server (Java & Bedrock) on Pro
 ![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
 ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
-## Status
+## 📊 Status
 
 Stable. VM and LXC tested. Bedrock updates remain manual.
 
@@ -103,7 +103,7 @@ chmod +x setup_bedrock.sh
 sudo -u minecraft screen -r bedrock
 ```
 
-## Backups
+## 🗃 Backups
 
 ### Option A: systemd
 
@@ -149,7 +149,9 @@ crontab -e
 45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
 ```
 
-## Auto-Update (Java)
+## ♻ Auto-Update
+
+Java Edition: `update.sh` (created by `setup_minecraft.sh`) pulls the latest PaperMC build with SHA256 and size validation.
 
 ```bash
 cd /opt/minecraft && ./update.sh
@@ -194,9 +196,13 @@ sudo ufw allow 19132/udp
 sudo ufw enable
 ```
 
-## Admin/Commands
+## 🕹 Admin/Commands
 
 See **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
+
+## ☕ Support / Donate
+
+If this project saves you time, consider supporting continued maintenance via [Buy Me A Coffee](https://buymeacoffee.com/timintech).
 
 ## Troubleshooting
 

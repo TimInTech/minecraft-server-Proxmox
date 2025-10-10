@@ -61,6 +61,9 @@ exec java -Xms${xms}M -Xmx${xmx}M -jar server.jar nogui
 E2
 chmod +x start.sh
 
+# Ensure minecraft owns newly created files
+chown -R minecraft:minecraft /opt/minecraft
+
 # Ensure screen runtime directory exists with correct ownership and mode
 # NOTE: Required on Debian 12/13 so screen can create sockets.
 install -d -m 0775 -o root -g utmp /run/screen || true
