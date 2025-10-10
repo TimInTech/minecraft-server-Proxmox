@@ -16,16 +16,7 @@
 
 ---
 
-## ✅ Requirements
-- Proxmox VE: 7.4+ / 8.x / 9.x
-- Gast-OS: Debian 12/13 oder Ubuntu 24.04
-- CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
-- Storage: ≥10 GB SSD
-- Netzwerk: Bridged NIC (vmbr0), offene Ports 25565/TCP, 19132/UDP
-
----
-
-## 📝 Introduction
+## Introduction
 
 This repository lets you deploy a high-performance Minecraft server (Java & Bedrock) on your Proxmox host in minutes.  
 Designed for both VMs and LXC containers, it provides easy CLI-first installation, automated backups, and update scripts.  
@@ -34,15 +25,23 @@ Perfect for self-hosters, gaming communities, and homelab enthusiasts!
 > Note for this workspace: Simulation only
 > We do not execute or install anything here. When asked to "run", we only show and explain commands. See SIMULATION.md for the simulated flow of each script.
 
+Quick Links:
+- [Server Commands](SERVER_COMMANDS.md)
+- [Simulation Guide](SIMULATION.md)
+- [Bedrock Networking](docs/BEDROCK_NETWORKING.md)
+- [Copilot Workflow](.github/copilot-instructions.md)
+- Issues — Open an issue
 
-## ✅ Requirements
+
+## Requirements
 - Proxmox VE: 7.4+ / 8.x / 9.x
 - Guest OS: Debian 11/12/13 or Ubuntu 24.04
-- CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
+- CPU/RAM: ≥2 vCPU, ≥–4 GB RAM (Java), ≥–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
+- Java 21 required; if OpenJDK 21 is missing, fallback to Amazon Corretto 21 (APT signed-by keyring).
 
-Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
+ 
 
 
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
@@ -55,7 +54,7 @@ Java 21 is required. If OpenJDK 21 is missing in your repositories, the installe
 ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
 
-## 📊 Status
+## Status
 
 
 
@@ -77,17 +76,17 @@ Open console:
 sudo -u minecraft screen -r minecraft
 ```
 
-> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
-
-> Hinweis (Debian 12/13): screen benötigt `/run/screen` mit root:utmp und 0775. Persistenz nach Reboot:
-
+> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775`.
+>
+> To persist across reboots:
+>
 > ```bash
 > sudo install -d -m 0775 -o root -g utmp /run/screen
 > printf 'd /run/screen 0775 root utmp -\n' | sudo tee /etc/tmpfiles.d/screen.conf
 > sudo systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf
 > ```
 
-### Empfohlen (Java): systemd statt screen
+### Recommended (Java): systemd instead of screen
 
 ```bash
 sudo cp minecraft.service /etc/systemd/system/minecraft.service && sudo systemctl daemon-reload && sudo systemctl enable --now minecraft
@@ -108,7 +107,7 @@ YAML
 sudo netplan apply
 ```
 
-> Passe Nameserver an lokale Resolver (Pi-hole/Unbound) an.
+> Adjust nameservers to your local resolver (Pi-hole/Unbound).
 
 Then run the installer as above.
 
@@ -141,7 +140,7 @@ sudo -u minecraft screen -r bedrock
 ```
 
 
-## 🗃️ Backups
+## Backups
 
 ### Option A: systemd
 
@@ -194,7 +193,7 @@ crontab -e
 ```
 
 
-## ♻️ Auto-Update
+## Auto-Update
 
 
 ```bash
@@ -211,14 +210,9 @@ crontab -e
 
 > Bedrock requires manual download from Mojang (`setup_bedrock.sh` enforces checksum; see below).
 
-
-**Bedrock Sicherheit:** `setup_bedrock.sh` erzwingt per Default eine SHA256-Prüfung. Setze `REQUIRED_BEDROCK_SHA256` vor dem Run; oder überschreibe mit `REQUIRE_BEDROCK_SHA=0`.
+Bedrock security: `setup_bedrock.sh` enforces SHA256 by default. Set `REQUIRED_BEDROCK_SHA256` before running; or override with `REQUIRE_BEDROCK_SHA=0`.
 
 ## Configuration
-
-### /etc/mc_backup.conf
-
-
 
 ### JVM memory (Java)
 
@@ -231,10 +225,14 @@ java -Xms2G -Xmx4G -jar server.jar nogui
 ```
 
 
-### Integrity
+## Integrity & Firewall
 
+Integrity
 
-## Firewall
+- PaperMC downloads: verify SHA256 and ensure file size is greater than 5 MB before replacing `server.jar`.
+- Bedrock: integrity is enforced by default. Keep `REQUIRE_BEDROCK_SHA=1` and set `REQUIRED_BEDROCK_SHA256` to a known value before running `setup_bedrock.sh`.
+
+Firewall
 
 ```bash
 sudo apt-get install -y ufw
@@ -248,68 +246,26 @@ sudo ufw allow 19132/udp comment "Minecraft Bedrock v6"
 ```
 
 
-## Optional: systemd service (Java)
+## Admin/Commands
 
-```bash
-sudo cp minecraft.service /etc/systemd/system/minecraft.service
-sudo systemctl daemon-reload
-sudo systemctl enable --now minecraft
-```
-
-## Optional: systemd service (Bedrock)
-
-```bash
-sudo tee /etc/systemd/system/minecraft-bedrock.service >/dev/null <<'EOF'
-[Unit]
-Description=Minecraft Bedrock Server
-After=network-online.target
-Wants=network-online.target
-StartLimitIntervalSec=0
-
-[Service]
-Type=simple
-WorkingDirectory=/opt/minecraft-bedrock
-User=minecraft
-Group=minecraft
-ExecStart=/usr/bin/screen -DmS bedrock /bin/bash -lc './start.sh'
-ExecStop=/usr/bin/screen -S bedrock -X quit
-Restart=on-failure
-RestartSec=5
-NoNewPrivileges=yes
-ProtectSystem=full
-ProtectHome=yes
-PrivateTmp=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable --now minecraft-bedrock
-```
-
-
-## 🕹️ Admin/Commands
-
-
+See [SERVER_COMMANDS.md](SERVER_COMMANDS.md).
 
 ## Troubleshooting
 
-
+- Screen fails to attach: ensure `/run/screen` exists with `root:utmp` and mode `0775` (see Quickstart snippet).
+- Connection issues: verify firewall rules for TCP 25565 (Java) and UDP 19132 (Bedrock); check container networking.
+- Java memory errors: lower `-Xms`/`-Xmx` in `/opt/minecraft/start.sh` or increase RAM.
 
 ## Contributing
 
-
+See [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
 ## License
 
 [MIT](LICENSE)
 
-> Proxmox helper: see `scripts/proxmox_create_ct_bedrock.sh` to auto-create a Debian 12 CT and install Bedrock (run on Proxmox host).
-> **Hinweis:** Das Proxmox-Helper-Skript unterstützt jetzt **Debian 12 und 13** (CT-Templates werden automatisch gewählt). Für andere Distributionen bitte Skript und Doku anpassen.
 
-
-## ☕ Support / Donate
+## Support / Donate
 
 If you find these tools useful and want to support development:
 

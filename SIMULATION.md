@@ -1,4 +1,4 @@
-# Simulation Guide – Do not execute locally
+# Simulation Guide – Simulation-only workspace: do not execute here.
 
 This repository contains shell scripts for installing and managing a Minecraft server on Proxmox hosts and guests. In this workspace, we operate in simulation-only mode: do not execute commands here. When asked to run, only show and explain the commands; do not install or modify this machine.
 
@@ -42,7 +42,7 @@ Installs a PaperMC-based Java server under /opt/minecraft.
 * Filesystem: creates `/opt/minecraft` owned by `minecraft`.
 * **Download**: queries the PaperMC API to get the latest version/build and downloads `server.jar` (SHA256 verified).
 * EULA: writes `eula.txt` with `eula=true`.
-* Start script: creates `start.sh` with autosized memory (`Xms ≈ RAM/4`, `Xmx ≈ RAM/2`, floors `256M/448M`).
+* Start script: creates `start.sh` with autosized memory (`Xms ≈ RAM/4`, `Xmx ≈ RAM/2`, floors `256M/448M`, cap `16G`).
 * Runtime: starts the server in a detached GNU screen session `minecraft`.
 
 Expected state:
@@ -62,7 +62,7 @@ Same as VM variant but without `sudo`. Also creates `/run/screen` (root:utmp, 07
 
 ### update.sh (Java Edition updater)
 
-* Resolves latest Paper build via API, downloads `server.jar`, verifies SHA256, replaces file.
+* Resolves latest Paper build via API, downloads `server.jar`, verifies SHA256 (>5 MB size sanity), replaces file.
 
 ## Networking
 
@@ -81,10 +81,4 @@ Same as VM variant but without `sudo`. Also creates `/run/screen` (root:utmp, 07
 
 **Done.**
 
-Ersetze die oben gelisteten Dateien in deinem Arbeitsbaum und committe/pushe wie gewohnt:
-
-```bash
-git add README.md setup_minecraft.sh setup_minecraft_lxc.sh SIMULATION.md
-git commit -m "fix: installer downloads server.jar with SHA check; tiny-CT RAM floors; remove broken banner"
-git push
-```
+To commit changes on your own host or CI, use your usual Git workflow.

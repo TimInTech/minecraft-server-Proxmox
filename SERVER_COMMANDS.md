@@ -1,10 +1,10 @@
-# 📘 Minecraft Server Control – Commands & Admin Guide (LXC/VM)
+# Minecraft Server Control – Commands & Admin Guide (LXC/VM)
 
 This guide contains useful commands to manage a Minecraft server (Java or Bedrock Edition) installed via Proxmox LXC container or VM.
 
 ---
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```bash
 cd /opt/minecraft         # Java Edition
@@ -13,7 +13,7 @@ cd /opt/minecraft-bedrock # Bedrock Edition
 
 ---
 
-## ▶️ Starting the Server
+## Starting the Server
 
 ```bash
 cd /opt/minecraft
@@ -41,7 +41,7 @@ CTRL + A, then D
 
 ---
 
-## 🔁 Stopping the Server (from Terminal)
+## Stopping the Server (from Terminal)
 
 In the screen session with the server running:
 
@@ -53,7 +53,7 @@ This cleanly shuts down the server.
 
 ---
 
-## 📦 Updating the Java (PaperMC) Server
+## Updating the Java (PaperMC) Server
 
 ```bash
 cd /opt/minecraft
@@ -64,7 +64,7 @@ Downloads the latest PaperMC version and replaces `server.jar`.
 
 ---
 
-## ❗ Bedrock Edition Notice
+## Bedrock Edition Notice
 
 Bedrock **cannot be updated automatically**. Instead, run:
 
@@ -77,7 +77,7 @@ This script shows the manual download link.
 
 ---
 
-## ⚙️ Advanced Options
+## Advanced Options
 
 ### Adjusting RAM Allocation (Java)
 
@@ -95,7 +95,7 @@ java -Xms4G -Xmx6G -jar server.jar nogui
 
 ---
 
-## 🧼 Log Files
+## Log Files
 
 ```bash
 cd /opt/minecraft/logs/
@@ -103,7 +103,7 @@ cd /opt/minecraft/logs/
 
 ---
 
-# 🧠 Useful In-Game Admin Commands
+# Useful In-Game Admin Commands
 
 If you're listed as OP (`ops.json`):
 
@@ -115,7 +115,7 @@ If you're listed as OP (`ops.json`):
 
 ---
 
-## ✅ Grant OP Status (via Console or In-Game)
+## Grant OP Status (via Console or In-Game)
 
 ```bash
 op <playername>
@@ -129,7 +129,7 @@ op TimInTech
 
 ---
 
-## 📜 Frequently Used Commands
+## Frequently Used Commands
 
 | Command                        | Description                          |
 | ------------------------------ | ------------------------------------ |
@@ -147,7 +147,7 @@ op TimInTech
 
 ---
 
-## 🧪 Tips for Enabling Cheats
+## Tips for Enabling Cheats
 
 To use these commands:
 
@@ -156,7 +156,7 @@ To use these commands:
 
 ---
 
-## 📁 Editing the `ops.json` File (optional)
+## Editing the `ops.json` File (optional)
 
 Located at:
 
@@ -179,11 +179,11 @@ Example content:
 
 ---
 
-# 🎮 Command Blocks (Java & Bedrock)
+# Command Blocks (Java & Bedrock)
 
 Command blocks enable automation using Redstone and custom logic.
 
-## 📦 Activation
+## Activation
 
 Enable them in the `server.properties` file:
 
@@ -193,7 +193,7 @@ enable-command-block=true
 
 ---
 
-## 🧩 Example Command Block Uses
+## Example Command Block Uses
 
 | Command                                 | Description                            |
 | --------------------------------------- | -------------------------------------- |
@@ -206,7 +206,7 @@ enable-command-block=true
 
 ---
 
-# 🪨 Bedrock-Specific Commands
+# Bedrock-Specific Commands
 
 | Command                              | Description                    |                                      |
 | ------------------------------------ | ------------------------------ | ------------------------------------ |

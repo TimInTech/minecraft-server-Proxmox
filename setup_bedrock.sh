@@ -40,7 +40,7 @@ TMP_ZIP="$(mktemp -p /tmp bedrock-server.XXXXXX.zip)"
 trap 'rm -f "$TMP_ZIP"' EXIT
 
 echo "Downloading: $LATEST_URL"
-wget -qO "$TMP_ZIP" "$LATEST_URL"
+wget -q --tries=3 --timeout=20 -O "$TMP_ZIP" "$LATEST_URL"
 
 ACTUAL_SHA="$(sha256sum "$TMP_ZIP" | awk '{print $1}')"
 echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"

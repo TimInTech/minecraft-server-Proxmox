@@ -37,12 +37,12 @@ cd /opt/minecraft
 echo "eula=true" > eula.txt
 
 # Download Paper für $MC_VER (SHA256 + Mindestgröße)
-LATEST_BUILD="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}" | jq -r '.builds | last')"
-BUILD_JSON="$(curl -fsSL "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}")"
+LATEST_BUILD="$(curl -fL --retry 3 --retry-delay 2 -sS "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}" | jq -r '.builds | last')"
+BUILD_JSON="$(curl -fL --retry 3 --retry-delay 2 -sS "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}")"
 EXPECTED_SHA="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')"
 JAR_NAME="$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')"
 
-wget -qO server.jar "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+wget -q --tries=3 --timeout=20 -O server.jar "https://api.papermc.io/v2/projects/paper/versions/${MC_VER}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
 [ "$(stat -c%s server.jar)" -gt 5000000 ] || { echo "ERROR: server.jar zu klein/ungültig" >&2; exit 1; }
 ACTUAL_SHA="$(sha256sum server.jar | awk '{print $1}')"
 if [ -n "$EXPECTED_SHA" ] && [ "$EXPECTED_SHA" != "null" ] && [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
@@ -74,7 +74,7 @@ Wants=network-online.target
 User=minecraft
 Group=minecraft
 WorkingDirectory=/opt/minecraft
-ExecStart=/usr/bin/bash /opt/minecraft/start.sh
+ExecStart=/opt/minecraft/start.sh
 SuccessExitStatus=0 143
 Restart=on-failure
 RestartSec=5
