@@ -1,4 +1,4 @@
-# 🟩 Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
+# Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
 
 <img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
 
@@ -14,30 +14,36 @@
 
 ---
 
-## 🔗 Quick Links
-- 📜 **Server Commands**: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
-- 🧪 **Simulation guide**: [SIMULATION.md](SIMULATION.md)
-- 🌐 **Bedrock Networking**: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
-- 🤖 **Copilot Workflow**: [.github/copilot-instructions.md](.github/copilot-instructions.md)
-- 🐞 **Issues & Feedback**: [Open an issue](../../issues)
+## Quick Links
+
+- Server Commands: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
+- Simulation Guide: [SIMULATION.md](SIMULATION.md)
+- Bedrock Networking: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
+- Copilot Workflow: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+- Issues & Feedback: [Open an issue](../../issues)
 
 ---
 
-## ✅ Requirements
+## Requirements
+
 - Proxmox VE: 7.4+ / 8.x / 9.x
-- Gast-OS: Debian 12/13 oder Ubuntu 24.04
+- Guest OS: Debian 11/12/13 or Ubuntu 24.04
 - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
-- Netzwerk: Bridged NIC (vmbr0), Ports 25565/TCP, 19132/UDP
+- Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
+
+Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
 
 ---
 
-## 📝 Introduction
-Dieses Repo stellt in Minuten einen performanten Minecraft-Server (Java & Bedrock) auf Proxmox bereit. VM und LXC werden unterstützt. CLI-First Setup, Update-Skript, Backup-Beispiele.
+## Introduction
 
-> Simulation only: Keine Ausführung hier. Siehe **SIMULATION.md**.
+This repository provisions a performant Minecraft server (Java & Bedrock) on Proxmox in minutes. VM and LXC are supported. CLI-first setup, updater, and backup examples are provided.
 
-## 🧩 Technologies & Dependencies
+> Simulation only: Do not execute commands in this workspace. See SIMULATION.md.
+
+## Technologies & Dependencies
+
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
 ![Debian](https://img.shields.io/badge/Debian-11%20%2F%2012%20%2F%2013-A81D33?logo=debian&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
@@ -47,20 +53,22 @@ Dieses Repo stellt in Minuten einen performanten Minecraft-Server (Java & Bedroc
 ![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
 ![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
 
-## 📊 Status
-Stabil. LXC/VM getestet. Bedrock Update manuell.
+## Status
 
-## 🚀 Quickstart
+Stable. VM and LXC tested. Bedrock updates remain manual.
+
+## Quickstart
 
 ### VM (DHCP)
+
 ```bash
 wget https://raw.githubusercontent.com/TimInTech/minecraft-server-Proxmox/main/setup_minecraft.sh
 chmod +x setup_minecraft.sh
 ./setup_minecraft.sh
 sudo -u minecraft screen -r minecraft
-````
+```
 
-> Debian 12/13: `/run/screen` mit `root:utmp` und `0775` (siehe unten).
+> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
 
 ### VM (Static IP)
 
@@ -95,7 +103,7 @@ chmod +x setup_bedrock.sh
 sudo -u minecraft screen -r bedrock
 ```
 
-## 🗃️ Backups
+## Backups
 
 ### Option A: systemd
 
@@ -141,7 +149,7 @@ crontab -e
 45 3 * * * tar -czf /var/backups/minecraft/bedrock-$(date +\%F).tar.gz /opt/minecraft-bedrock
 ```
 
-## ♻️ Auto-Update
+## Auto-Update (Java)
 
 ```bash
 cd /opt/minecraft && ./update.sh
@@ -149,26 +157,27 @@ crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
 
-> Bedrock erfordert manuellen Download. `setup_bedrock.sh` erzwingt SHA256 (siehe unten).
+> Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
 
-## ⚙️ Configuration
+## Configuration
 
 ### JVM memory (Java)
 
-Installer setzt `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` mit Floors `256M/448M`. Override in `/opt/minecraft/start.sh`.
+The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
 
-## 🧾 Integrity & Firewall
+## Integrity & Firewall
 
 **Java (PaperMC):**
 
-* Paper-Download mit **SHA256-Verifikation** im Installer/Updater.
-* Mindestgröße `server.jar > 5 MB` als HTML-Fehlschutz.
+- Paper download is verified via **SHA256** in installer/updater.
+- Minimum size `server.jar > 5 MB` to avoid saving HTML error pages.
 
 **Bedrock:**
 
-* Standard: `REQUIRE_BEDROCK_SHA=1`. Setze `REQUIRED_BEDROCK_SHA256=<sha>`. Override möglich mit `REQUIRE_BEDROCK_SHA=0`.
+- Default: `REQUIRE_BEDROCK_SHA=1`. Set `REQUIRED_BEDROCK_SHA256=<sha>`. Override with `REQUIRE_BEDROCK_SHA=0`.
+- The installer validates MIME type via HTTP HEAD (application/zip|octet-stream), checks size, and tests the ZIP via `unzip -tq` before extracting.
 
-**screen Socket (Debian 12/13):**
+**screen socket (Debian 11/12/13):**
 
 ```bash
 sudo install -d -m 0775 -o root -g utmp /run/screen
@@ -185,25 +194,27 @@ sudo ufw allow 19132/udp
 sudo ufw enable
 ```
 
-## 🕹️ Admin/Commands
+## Admin/Commands
 
-Siehe **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
+See **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
-* Zu wenig RAM in LXC → `start.sh` Werte reduzieren.
-* Kein `/run/screen` → Abschnitt „screen Socket“ ausführen.
-* Bedrock-ZIP MIME-Type Fehler → Mojang-Seite erneut prüfen.
+- Not enough RAM in LXC → reduce values in `start.sh`.
+- Missing `/run/screen` → follow the "screen socket" section above.
+- Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
 
-## 🤝 Contributing
+## Contributing
 
-PR-Vorlage nutzen. Keine Ausführung in diesem Workspace. Siehe **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
+Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
 
-## 📚 References
+For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 
-* PaperMC: [https://papermc.io/](https://papermc.io/)
-* Proxmox Wiki: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
-* Mojang Bedrock Server: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
+## References
+
+- PaperMC: [https://papermc.io/](https://papermc.io/)
+- Proxmox Wiki: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
+- Mojang Bedrock Server: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
 
 ## License
 

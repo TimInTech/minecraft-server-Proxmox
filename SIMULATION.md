@@ -35,11 +35,11 @@ The descriptions below explain the side effects, created files, and expected out
 Installs a PaperMC-based Java server under /opt/minecraft.
 
 - Packages: apt update/upgrade, installs screen, wget, curl, jq, unzip.
-- Java: attempts OpenJDK 21; if unavailable, falls back to OpenJDK 17 (headless).
+- Java: attempts OpenJDK 21; if unavailable, falls back to Amazon Corretto 21 via APT keyring.
 - Filesystem: creates /opt/minecraft owned by the invoking user; changes into that directory.
-- Download: queries PaperMC API via curl+jq to get LATEST_VERSION and LATEST_BUILD; downloads server.jar accordingly.
+- Download: queries PaperMC API via curl+jq to get LATEST_VERSION and LATEST_BUILD; downloads server.jar accordingly with SHA256 verification and minimum size >5MB.
 - EULA: writes eula.txt with eula=true.
-- Start script: creates start.sh (java -Xms2G -Xmx4G -jar server.jar nogui) and marks it executable.
+- Start script: creates start.sh with auto-sized memory (Xms≈RAM/4, Xmx≈RAM/2; floors 256M/448M; cap ≤16G) and marks it executable.
 - Update script: writes update.sh to refresh server.jar to latest build; marks it executable.
 - Runtime: starts the server in a detached GNU screen session named minecraft.
 
@@ -64,8 +64,8 @@ Idempotency:
 Similar to the VM installer but uses apt without sudo (typical for privileged containers) and does not write an update.sh. It:
 
 - Updates packages, installs screen, wget, curl, jq, unzip.
-- Installs OpenJDK 21 or falls back to 17.
-- Sets up /opt/minecraft, downloads latest PaperMC server.jar.
+- Installs OpenJDK 21 or falls back to Amazon Corretto 21 via APT keyring.
+- Sets up /opt/minecraft, downloads latest PaperMC server.jar with SHA256 verification and minimum size >5MB.
 - Accepts EULA and creates start.sh.
 - Starts screen session minecraft.
 
@@ -84,8 +84,8 @@ Installs a Bedrock server under /opt/minecraft-bedrock.
 
 - Packages: installs unzip, wget, screen, curl (with sudo).
 - Filesystem: creates /opt/minecraft-bedrock and assigns to invoking user.
-- Download: parses Mojang download page for the latest linux ZIP (azureedge) and downloads it.
-- Validation: tests the ZIP with unzip -tq before extracting; extracts contents and removes ZIP.
+- Download: parses Mojang download page for the latest linux ZIP and downloads it after validating Content-Type via HTTP HEAD.
+- Validation: prints archive SHA256, enforces REQUIRED_BEDROCK_SHA256 by default (override with REQUIRE_BEDROCK_SHA=0), tests the ZIP with unzip -tq before extracting; extracts contents and removes ZIP.
 - Start script: creates start.sh to run LD_LIBRARY_PATH=. ./bedrock_server.
 - Runtime: starts a screen session bedrock running start.sh.
 
@@ -104,22 +104,22 @@ Failure points:
 Updates PaperMC server.jar to the latest available build.
 
 - Assumes /opt/minecraft as working dir.
-- Uses curl+jq to resolve latest version/build; downloads new server.jar.
+- Uses curl+jq to resolve latest version/build; downloads new server.jar with SHA256 verification and minimum size >5MB.
 - Does not stop the server; best practice is to stop the server, back up, then update.
 
 Safe update flow (suggested): stop server (screen -S minecraft -X stuff 'stop\n'), back up /opt/minecraft, run update.sh, then start start.sh again.
 
 ### minecraft.service (Optional systemd unit – Java)
 
-Defines a simple systemd service to run /opt/minecraft/start.sh as root at boot.
+Defines a hardened systemd service to run /opt/minecraft/start.sh as the minecraft user at boot.
 
-- User=root, WorkingDirectory=/opt/minecraft, ExecStart=/opt/minecraft/start.sh.
+- User=minecraft, Group=minecraft, WorkingDirectory=/opt/minecraft, ExecStart=/opt/minecraft/start.sh.
 - Installation (example, do not execute here):
   - sudo cp minecraft.service /etc/systemd/system/minecraft.service
   - sudo systemctl daemon-reload
   - sudo systemctl enable --now minecraft
 
-Consider customizing User to a non-root service account and hardening with systemd options (ProtectSystem, PrivateTmp, etc.).
+Includes hardening (NoNewPrivileges, ProtectSystem=full, PrivateTmp, etc.) and limits writes to /opt/minecraft only.
 
 ### bedrock_helper.sh
 
@@ -152,6 +152,7 @@ In this workspace:
 
 ## Integrity & Firewall
 
-> Integrity: Java downloads are SHA256-verified via PaperMC API.  
-> Bedrock has no official checksum; the installer prints the archive’s SHA256.  
-> Enforce a known value by exporting `REQUIRED_BEDROCK_SHA256=<sha256>` before running `setup_bedrock.sh`.
+> Integrity: Java downloads are SHA256-verified via PaperMC API with a minimum-size safeguard.  
+> Bedrock checksum is enforced by default. Export `REQUIRED_BEDROCK_SHA256=<sha256>` or set `REQUIRE_BEDROCK_SHA=0` to override.
+
+For Debian 12/13, ensure `/run/screen` exists with `root:utmp` and `0775`. You can persist it via systemd-tmpfiles.
