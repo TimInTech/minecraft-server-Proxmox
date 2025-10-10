@@ -39,9 +39,9 @@ Installs a PaperMC-based Java server under /opt/minecraft.
 - Filesystem: creates /opt/minecraft owned by the invoking user; changes into that directory.
 - Download: queries PaperMC API via curl+jq to get LATEST_VERSION and LATEST_BUILD; downloads server.jar accordingly with SHA256 verification and minimum size >5MB.
 - EULA: writes eula.txt with eula=true.
-- Start script: creates start.sh with auto-sized memory (Xms≈RAM/4, Xmx≈RAM/2; floors 256M/448M; cap ≤16G) and marks it executable.
-- Update script: writes update.sh to refresh server.jar to latest build; marks it executable.
-- Runtime: starts the server in a detached GNU screen session named minecraft.
+- Start script: creates start.sh with auto-sized memory (Xms≈RAM/4, Xmx≈RAM/2; cap ≤16G) and marks it executable.
+- Update script: writes update.sh mirroring the repository version (SHA256 verification, >5 MB minimum size).
+- Runtime prep: ensures `/run/screen` exists (0775, root:utmp), persists it via systemd-tmpfiles, and starts the server as the minecraft user inside a detached GNU screen session.
 
 Expected external state after run:
 
@@ -51,7 +51,7 @@ Expected external state after run:
 Common failure points and mitigations:
 
 - Network/API: If PaperMC API unreachable or jq missing, download/version resolution fails → verify connectivity and jq installation.
-- Java: If OpenJDK 21 not in repos, script falls back to 17 automatically.
+- Java: If OpenJDK 21 packages are missing, script falls back to Amazon Corretto 21 via its APT repository.
 - Permissions: Ensure user has rights to /opt/minecraft.
 - Memory flags: Adjust -Xms/-Xmx in start.sh to match available RAM.
 
@@ -67,7 +67,7 @@ Similar to the VM installer but uses apt without sudo (typical for privileged co
 - Installs OpenJDK 21 or falls back to Amazon Corretto 21 via APT keyring.
 - Sets up /opt/minecraft, downloads latest PaperMC server.jar with SHA256 verification and minimum size >5MB.
 - Accepts EULA and creates start.sh.
-- Starts screen session minecraft.
+- Ensures `/run/screen` exists (0775, root:utmp), persists it via systemd-tmpfiles, and starts screen session minecraft as the minecraft user.
 
 Expected external state:
 
@@ -83,11 +83,11 @@ Notes for LXC:
 Installs a Bedrock server under /opt/minecraft-bedrock.
 
 - Packages: installs unzip, wget, screen, curl (with sudo).
-- Filesystem: creates /opt/minecraft-bedrock and assigns to invoking user.
+- Filesystem: creates /opt/minecraft-bedrock and assigns to the minecraft user.
 - Download: parses Mojang download page for the latest linux ZIP and downloads it after validating Content-Type via HTTP HEAD.
 - Validation: prints archive SHA256, enforces REQUIRED_BEDROCK_SHA256 by default (override with REQUIRE_BEDROCK_SHA=0), tests the ZIP with unzip -tq before extracting; extracts contents and removes ZIP.
 - Start script: creates start.sh to run LD_LIBRARY_PATH=. ./bedrock_server.
-- Runtime: starts a screen session bedrock running start.sh.
+- Runtime prep: ensures `/run/screen` exists (0775, root:utmp), persists it via systemd-tmpfiles, and starts a screen session bedrock running start.sh as the minecraft user.
 
 Expected external state:
 

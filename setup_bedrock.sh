@@ -65,6 +65,8 @@ chown -R minecraft:minecraft /opt/minecraft-bedrock
 # Ensure screen runtime directory exists with correct ownership and mode
 # NOTE: Required on Debian 12/13 so screen can create sockets.
 install -d -m 0775 -o root -g utmp /run/screen || true
+printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
+systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
 
 if command -v runuser >/dev/null 2>&1; then
   runuser -u minecraft -- bash -lc 'cd /opt/minecraft-bedrock && screen -dmS bedrock ./start.sh'
