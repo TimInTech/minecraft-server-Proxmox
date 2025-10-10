@@ -19,7 +19,7 @@ Thanks for your interest! This repository contains shell scripts to set up Minec
 ## Coding style (shell)
 
 - `set -euo pipefail` for safety.
-- Quote variables and use `"$(...)"` command substitution.
+- Quote variables and use `"$(command)"` command substitution.
 - Prefer explicit paths and idempotent operations.
 - Validate downloads and inputs where practical.
 
