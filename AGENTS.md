@@ -26,7 +26,7 @@ This repository provisions Minecraft servers (Java and Bedrock) on Proxmox VMs/L
 
 ## Coding Style & Naming Conventions
 - Bash with `set -euo pipefail`; 2-space indentation
-- Quote variables; prefer `$(...)`; use idempotent ops (e.g., `install -d`)
+- Quote variables; prefer `$(command)`; use idempotent ops (e.g., `install -d`)
 - Names: ENV in UPPER_SNAKE (`MC_VER`, `REQUIRE_BEDROCK_SHA`); functions in lower_snake (`ensure_java`)
 - Systemd: run as `minecraft`; hardening (e.g., `NoNewPrivileges`, `ProtectSystem=full`)
 
@@ -36,7 +36,7 @@ This repository provisions Minecraft servers (Java and Bedrock) on Proxmox VMs/L
 - Verify networked downloads (SHA256 and size > 5 MB). Bedrock requires `REQUIRED_BEDROCK_SHA256` unless `REQUIRE_BEDROCK_SHA=0`
 
 ## Commit & Pull Request Guidelines
-- Conventional Commits (e.g., `feat(java): …`, `fix: …`, `docs: …`, `maint: …`, `harden(bedrock): …`)
+- Conventional Commits (e.g., `feat(java): add updater`, `fix: correct SHA check`, `docs: update README`, `maint: cleanup`, `harden(bedrock): enforce checksum`)
 - One focused change per PR; include description, security notes, example commands; update `SIMULATION.md` if behavior changes
 - Use `.github/pull_request_template.md`; link related issues; console snippets preferred
 
