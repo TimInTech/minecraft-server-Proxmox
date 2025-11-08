@@ -27,10 +27,14 @@ printf '%s\n' "eula=true" > eula.txt
 # Autosize memory: Xms=RAM/4, Xmx=RAM/2; floors 256M/448M; cap Xmx ≤16G.
 mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo); mem_mb=$((mem_kb/1024))
 xmx=$(( mem_mb/2 ))
-(( xmx < 448 )) && xmx=448
+if (( xmx < 2048 )); then
+  xmx=2048
+fi
 (( xmx > 16384 )) && xmx=16384
 xms=$(( mem_mb/4 ))
-(( xms < 256 )) && xms=256
+if (( xms < 1024 )); then
+  xms=1024
+fi
 (( xms > xmx )) && xms=$xmx
 
 # Download latest PaperMC with SHA256 verification and min-size check (>5MB).
