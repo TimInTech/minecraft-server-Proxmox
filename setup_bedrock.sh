@@ -10,7 +10,7 @@ chown -R minecraft:minecraft /opt/minecraft-bedrock
 cd /opt/minecraft-bedrock
 
 # Scrape Mojang page for the latest Linux ZIP link
-HTML=$(curl -fsSL "https://www.minecraft.net/en-us/download/server/bedrock")
+HTML=$(curl -fsSL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "https://www.minecraft.net/en-us/download/server/bedrock")
 LATEST_URL=$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)
 if [[ -z "${LATEST_URL:-}" ]]; then
   echo "ERROR: Could not find Bedrock server URL on Mojang page" >&2
@@ -18,12 +18,12 @@ if [[ -z "${LATEST_URL:-}" ]]; then
 fi
 
 # HEAD check for MIME type and optional size
-if ! curl -fsSI "$LATEST_URL" | grep -iqE '^content-type:\s*(application/zip|application/octet-stream)'; then
+if ! curl -fsSI --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "$LATEST_URL" | grep -iqE '^content-type:\s*(application/zip|application/octet-stream)'; then
   echo "ERROR: Unexpected Content-Type for Bedrock ZIP (must be application/zip or octet-stream)" >&2
   exit 1
 fi
 echo "Downloading: $LATEST_URL"
-curl -fL --retry 3 --retry-delay 2 -o bedrock-server.zip "$LATEST_URL"
+curl -fL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" --retry 3 --retry-delay 2 -o bedrock-server.zip "$LATEST_URL"
 zip_size=$(stat -c '%s' bedrock-server.zip)
 if (( zip_size < 1048576 )); then # 1MB sanity check
   echo "ERROR: Downloaded bedrock-server.zip is too small (${zip_size} bytes)." >&2
