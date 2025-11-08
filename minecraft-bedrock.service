@@ -6,8 +6,8 @@ Wants=network-online.target
 [Service]
 User=minecraft
 Group=minecraft
-WorkingDirectory=/opt/bedrock
-ExecStart=/opt/bedrock/start.sh
+WorkingDirectory=/opt/minecraft-bedrock
+ExecStart=/opt/minecraft-bedrock/start.sh
 Restart=on-failure
 RestartSec=5s
 
