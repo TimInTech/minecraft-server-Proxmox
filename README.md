@@ -20,7 +20,7 @@
 - Simulation Guide: [SIMULATION.md](SIMULATION.md)
 - Bedrock Networking: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
 - Copilot Workflow: [.github/copilot-instructions.md](.github/copilot-instructions.md)
-- Issues — git@github.com:TimInTech/minecraft-server-Proxmox/issues
+- Issues — https://github.com/TimInTech/minecraft-server-Proxmox/issues
 
 ---
 
