@@ -27,7 +27,7 @@
 ## ✅ Requirements
 
 - Proxmox VE: 7.4+ / 8.x / 9.x
-- Guest OS: Debian 11/12/13 or Ubuntu 24.04
+- Guest OS: Debian 12/13 or Ubuntu 24.04
 - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
@@ -69,7 +69,7 @@ chmod +x setup_minecraft.sh
 sudo -u minecraft screen -r minecraft
 ```
 
-> Debian 11/12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
+> Debian 12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
 
 ### VM (Static IP)
 
@@ -165,7 +165,6 @@ crontab -e
 
 ### JVM memory (Java)
 
-The installer auto-sizes memory: `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` (minimums: 1G/2G). You can override these in `/opt/minecraft/start.sh`.
 
 The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
 
@@ -181,7 +180,7 @@ The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` a
 - Default: `REQUIRE_BEDROCK_SHA=1`. Set `REQUIRED_BEDROCK_SHA256=<sha>`. Override with `REQUIRE_BEDROCK_SHA=0`.
 - The installer validates MIME type via HTTP HEAD (application/zip|octet-stream), checks size, and tests the ZIP via `unzip -tq` before extracting.
 
-**screen socket (Debian 11/12/13):**
+**screen socket (Debian 12/13):**
 
 ```bash
 sudo install -d -m 0775 -o root -g utmp /run/screen
@@ -216,9 +215,8 @@ Use the PR template. Do not execute anything in this workspace. See **[.github/c
 
 For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 
-> **Simulation CLI:** For step-by-step Copilot CLI workflow, see [COPILOT_RUN_INSTRUCTIONS.md](COPILOT_RUN_INSTRUCTIONS.md).
+> **Simulation CLI:** For step-by-step Copilot CLI workflow, see [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
-For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 
 ## References
 
