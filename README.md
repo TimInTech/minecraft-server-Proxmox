@@ -1,4 +1,4 @@
-# Minecraft Server on Proxmox – Version 2.0 (updated 2025-10-07)
+# Minecraft Server on Proxmox – Version 2.0 (updated 2025-11-08)
 
 <img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
 
@@ -33,6 +33,7 @@
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
 
 Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
+**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see below). Bedrock installer enforces SHA256 checksum by default.
 
 ---
 
@@ -158,12 +159,13 @@ cd /opt/minecraft && ./update.sh
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
-
 > Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
-
+> **Checksum enforcement:** Bedrock installer requires `REQUIRED_BEDROCK_SHA256` and validates the ZIP before extraction.
 ## Configuration
 
 ### JVM memory (Java)
+
+The installer auto-sizes memory: `Xms ≈ RAM/4`, `Xmx ≈ RAM/2` (minimums: 1G/2G). You can override these in `/opt/minecraft/start.sh`.
 
 The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
 
@@ -210,9 +212,11 @@ If this project saves you time, consider supporting continued maintenance via [B
 - Missing `/run/screen` → follow the "screen socket" section above.
 - Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
 
-## Contributing
-
 Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
+
+For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
+
+> **Simulation CLI:** For step-by-step Copilot CLI workflow, see [COPILOT_RUN_INSTRUCTIONS.md](COPILOT_RUN_INSTRUCTIONS.md).
 
 For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 
@@ -227,4 +231,3 @@ For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 [MIT](LICENSE)
 
 > Proxmox Helper: `scripts/proxmox_create_ct_bedrock.sh` creates a Debian 12/13 container and installs Bedrock.
-
