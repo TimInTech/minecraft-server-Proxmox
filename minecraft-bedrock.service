@@ -1,0 +1,15 @@
+[Unit]
+Description=Minecraft Bedrock Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=minecraft
+Group=minecraft
+WorkingDirectory=/opt/bedrock
+ExecStart=/opt/bedrock/start.sh
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
