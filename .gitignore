@@ -8,3 +8,7 @@ path/to/file_or_folder
 # local-only
 refactor*.diff
 fix_all_issues.sh
+.venv/
+vendor/bundle/
+.bundle/
+.npm-cache/

@@ -10,6 +10,19 @@ WorkingDirectory=/opt/minecraft-bedrock
 ExecStart=/opt/minecraft-bedrock/start.sh
 Restart=on-failure
 RestartSec=5s
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/opt/minecraft-bedrock
 
 [Install]
 WantedBy=multi-user.target
