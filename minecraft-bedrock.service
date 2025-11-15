@@ -2,15 +2,20 @@
 Description=Minecraft Bedrock Server
 After=network-online.target
 Wants=network-online.target
+StartLimitIntervalSec=0
 
 [Service]
+Type=simple
 User=minecraft
 Group=minecraft
 WorkingDirectory=/opt/minecraft-bedrock
-ExecStart=/opt/minecraft-bedrock/start.sh
+ExecStart=/usr/bin/screen -DmS bedrock /bin/bash -lc './start.sh'
+ExecStop=/usr/bin/screen -S bedrock -X quit
 Restart=on-failure
-RestartSec=5s
+RestartSec=5
 UMask=0027
+
+# Systemd hardening options
 NoNewPrivileges=true
 ProtectSystem=full
 ProtectHome=true
