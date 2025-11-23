@@ -5,7 +5,6 @@ Wants=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
-Type=simple
 User=minecraft
 Group=minecraft
 WorkingDirectory=/opt/minecraft-bedrock
