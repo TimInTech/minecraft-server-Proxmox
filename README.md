@@ -166,7 +166,7 @@ crontab -e
 ### JVM memory (Java)
 
 
-The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `256M/448M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
+The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `1024M/2048M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
 
 ## Integrity & Firewall
 

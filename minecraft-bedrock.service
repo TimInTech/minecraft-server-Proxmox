@@ -5,9 +5,6 @@ Wants=network-online.target
 StartLimitIntervalSec=0
 
 [Service]
-# screen detaches from the invoking process, so let systemd know the service
-# will fork and manage the resulting screen session.
-Type=forking
 User=minecraft
 Group=minecraft
 WorkingDirectory=/opt/minecraft-bedrock
