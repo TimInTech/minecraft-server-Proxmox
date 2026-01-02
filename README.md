@@ -33,7 +33,7 @@
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
 
 Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
-**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see below). Bedrock installer enforces SHA256 checksum by default.
+**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see [Configuration](#configuration)).
 
 ---
 
@@ -69,7 +69,7 @@ chmod +x setup_minecraft.sh
 sudo -u minecraft screen -r minecraft
 ```
 
-> Debian 12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
+> **Debian 12/13:** If you encounter screen socket errors, see [Integrity & Firewall](#integrity--firewall) for `/run/screen` setup.
 
 ### VM (Static IP)
 
@@ -159,8 +159,7 @@ cd /opt/minecraft && ./update.sh
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
-> Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
-> **Checksum enforcement:** Bedrock installer requires `REQUIRED_BEDROCK_SHA256` and validates the ZIP before extraction.
+> Bedrock requires a manual download. See [Integrity & Firewall](#integrity--firewall) for checksum enforcement details.
 ## Configuration
 
 ### JVM memory (Java)
@@ -208,7 +207,7 @@ If this project saves you time, consider supporting continued maintenance via [B
 ## Troubleshooting
 
 - Not enough RAM in LXC → reduce values in `start.sh`.
-- Missing `/run/screen` → follow the "screen socket" section above.
+- Missing `/run/screen` → see [Integrity & Firewall](#integrity--firewall) section for setup commands.
 - Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
 
 Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
