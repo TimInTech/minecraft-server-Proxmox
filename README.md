@@ -210,11 +210,7 @@ If this project saves you time, consider supporting continued maintenance via [B
 - Missing `/run/screen` → see [Integrity & Firewall](#integrity--firewall) section for setup commands.
 - Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
 
-Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
-
-For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
-
-> **Simulation CLI:** For step-by-step Copilot CLI workflow, see [.github/copilot-instructions.md](.github/copilot-instructions.md).
+Use the PR template. Do not execute anything in this workspace. See **[SIMULATION.md](SIMULATION.md)** for safe workflow details and **[.github/copilot-instructions.md](.github/copilot-instructions.md)** for step-by-step Copilot CLI workflow.
 
 
 ## References
