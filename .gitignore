@@ -12,3 +12,6 @@ fix_all_issues.sh
 vendor/bundle/
 .bundle/
 .npm-cache/
+*.bak
+*.rej
+shellcheck_report.txt
