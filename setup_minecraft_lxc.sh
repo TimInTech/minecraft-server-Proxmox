@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+LOG_FILE="/opt/minecraft/minecraft.log"
 apt update
 apt install -y wget curl jq unzip ca-certificates gnupg
 
@@ -70,6 +71,6 @@ chmod +x start.sh
 # Ensure minecraft owns newly created files
 chown -R minecraft:minecraft /opt/minecraft
 
-runuser -u minecraft -- bash -lc 'cd /opt/minecraft && nohup ./start.sh >/var/log/minecraft.log 2>&1 &'
+runuser -u minecraft -- bash -lc "cd /opt/minecraft && nohup ./start.sh >>\"${LOG_FILE}\" 2>&1 &"
 
-echo "✅ Minecraft Java setup complete (LXC). Log: /var/log/minecraft.log"
+echo "✅ Minecraft Java setup complete (LXC). Log: ${LOG_FILE}"
