@@ -40,10 +40,13 @@ fi
 # Download latest PaperMC with SHA256 verification and min-size check (>5MB).
 PAPER_API_ROOT="https://api.papermc.io/v2/projects/paper"
 LATEST_VERSION=$(curl -fsSL "$PAPER_API_ROOT" | jq -r '.versions | last')
-BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/latest")
+LATEST_BUILD=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}" | jq -r '.builds | last')
+
+BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
 EXPECTED_SHA=$(jq -r '.downloads.application.sha256' <<<"$BUILD_JSON")
 JAR_NAME=$(jq -r '.downloads.application.name' <<<"$BUILD_JSON")
-DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/latest/downloads/${JAR_NAME}"
+
+DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
 
 # NOTE: Enforce integrity and basic size sanity to avoid HTML error pages saved as JAR.
 curl -fL --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
