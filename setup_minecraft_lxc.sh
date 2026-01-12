@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-apt update && apt upgrade -y
-apt install -y screen wget curl jq unzip ca-certificates gnupg
+apt update
+apt install -y wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
   # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring (no sudo in LXC).
@@ -40,11 +40,10 @@ fi
 # Download latest PaperMC with SHA256 verification and min-size check (>5MB).
 PAPER_API_ROOT="https://api.papermc.io/v2/projects/paper"
 LATEST_VERSION=$(curl -fsSL "$PAPER_API_ROOT" | jq -r '.versions | last')
-LATEST_BUILD=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}" | jq -r '.builds | last')
-BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
-EXPECTED_SHA=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.sha256')
-JAR_NAME=$(printf '%s' "$BUILD_JSON" | jq -r '.downloads.application.name')
-DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/latest")
+EXPECTED_SHA=$(jq -r '.downloads.application.sha256' <<<"$BUILD_JSON")
+JAR_NAME=$(jq -r '.downloads.application.name' <<<"$BUILD_JSON")
+DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/latest/downloads/${JAR_NAME}"
 
 # NOTE: Enforce integrity and basic size sanity to avoid HTML error pages saved as JAR.
 curl -fL --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
@@ -68,17 +67,6 @@ chmod +x start.sh
 # Ensure minecraft owns newly created files
 chown -R minecraft:minecraft /opt/minecraft
 
-# Ensure screen runtime directory exists with correct ownership and mode
-# NOTE: Required on Debian 12/13 so screen can create sockets.
-install -d -m 0775 -o root -g utmp /run/screen || true
-# NOTE: Persist /run/screen via systemd-tmpfiles in CTs as well
-printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
-systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
+runuser -u minecraft -- bash -lc 'cd /opt/minecraft && nohup ./start.sh >/var/log/minecraft.log 2>&1 &'
 
-if command -v runuser >/dev/null 2>&1; then
-  runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
-else
-  su -s /bin/bash -c 'cd /opt/minecraft && screen -dmS minecraft ./start.sh' minecraft
-fi
-
-echo "✅ Minecraft Java setup complete (LXC). Attach: screen -r minecraft"
+echo "✅ Minecraft Java setup complete (LXC). Log: /var/log/minecraft.log"
