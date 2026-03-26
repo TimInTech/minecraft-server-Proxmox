@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ── Minecraft Bedrock Server Installer ── v3.0 ──
+
 apt update
 apt install -y unzip wget screen curl ca-certificates
 
@@ -10,6 +12,7 @@ chown -R minecraft:minecraft /opt/minecraft-bedrock
 cd /opt/minecraft-bedrock
 
 # Scrape Mojang page for the latest Linux ZIP link
+# NOTE: Regex matches both old (1.x.x) and new (26.x) Mojang versioning schemes
 HTML=$(curl -fsSL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "https://www.minecraft.net/en-us/download/server/bedrock")
 LATEST_URL=$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)
 if [[ -z "${LATEST_URL:-}" ]]; then
@@ -64,8 +67,14 @@ chown -R minecraft:minecraft /opt/minecraft-bedrock
 
 # Ensure screen runtime directory exists with correct ownership and mode
 # NOTE: Required on Debian 12/13 so screen can create sockets.
-install -d -m 0775 -o root -g utmp /run/screen || true
-printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
+# In LXC, utmp group may not exist; fall back to root:root with 0777
+if getent group utmp >/dev/null 2>&1; then
+  install -d -m 0775 -o root -g utmp /run/screen || true
+  printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
+else
+  install -d -m 0777 -o root -g root /run/screen || true
+  printf 'd /run/screen 0777 root root -\n' > /etc/tmpfiles.d/screen.conf
+fi
 systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
 
 if command -v runuser >/dev/null 2>&1; then

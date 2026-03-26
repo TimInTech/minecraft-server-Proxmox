@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-LOG_FILE="/opt/minecraft/minecraft.log"
+# ── Minecraft Java Server Installer (LXC/CT) ── v3.0 ──
+# Uses PaperMC Fill v3 API (fill.papermc.io)
+
+USER_AGENT="minecraft-server-Proxmox/3.0 (https://github.com/TimInTech/minecraft-server-Proxmox)"
+
 apt update
-apt install -y wget curl jq unzip ca-certificates gnupg
+apt install -y screen wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
   # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring (no sudo in LXC).
@@ -38,19 +42,37 @@ if (( xms < 1024 )); then
 fi
 (( xms > xmx )) && xms=$xmx
 
-# Download latest PaperMC with SHA256 verification and min-size check (>5MB).
-PAPER_API_ROOT="https://api.papermc.io/v2/projects/paper"
-LATEST_VERSION=$(curl -fsSL "$PAPER_API_ROOT" | jq -r '.versions | last')
-LATEST_BUILD=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}" | jq -r '.builds | last')
+# ── Download latest stable PaperMC via Fill v3 API ──
+FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-BUILD_JSON=$(curl -fsSL "$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}")
-EXPECTED_SHA=$(jq -r '.downloads.application.sha256' <<<"$BUILD_JSON")
-JAR_NAME=$(jq -r '.downloads.application.name' <<<"$BUILD_JSON")
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions | last')
+echo "Latest Minecraft version: ${LATEST_VERSION}"
 
-DOWNLOAD_URL="$PAPER_API_ROOT/versions/${LATEST_VERSION}/builds/${LATEST_BUILD}/downloads/${JAR_NAME}"
+BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
+
+# Filter for STABLE channel; fall back to latest build if no stable exists yet
+STABLE_BUILD=$(printf '%s' "$BUILDS_JSON" | jq -r '
+  (map(select(.channel == "STABLE")) | sort_by(.id) | last) //
+  (sort_by(.id) | last)')
+
+if [[ -z "$STABLE_BUILD" || "$STABLE_BUILD" == "null" ]]; then
+  echo "ERROR: No builds found for version ${LATEST_VERSION}" >&2
+  exit 1
+fi
+
+LATEST_BUILD=$(printf '%s' "$STABLE_BUILD" | jq -r '.id')
+DOWNLOAD_URL=$(printf '%s' "$STABLE_BUILD" | jq -r '.downloads."server:default".url // empty')
+EXPECTED_SHA=$(printf '%s' "$STABLE_BUILD" | jq -r '.downloads."server:default".checksums.sha256 // empty')
+
+if [[ -z "$DOWNLOAD_URL" ]]; then
+  echo "ERROR: No download URL in API response for build ${LATEST_BUILD}" >&2
+  exit 1
+fi
+
+echo "Downloading PaperMC build ${LATEST_BUILD} for ${LATEST_VERSION}..."
 
 # NOTE: Enforce integrity and basic size sanity to avoid HTML error pages saved as JAR.
-curl -fL --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
+curl -fL -H "User-Agent: ${USER_AGENT}" --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
 ACTUAL_SHA=$(sha256sum server.jar | awk '{print $1}')
 if [[ -n "$EXPECTED_SHA" && "$EXPECTED_SHA" != "null" && "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
   echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
@@ -61,6 +83,7 @@ if (( jar_size < 5242880 )); then
   echo "ERROR: Downloaded server.jar is too small (${jar_size} bytes). Likely an error page." >&2
   exit 1
 fi
+echo "SHA256 verified: ${ACTUAL_SHA}"
 
 cat > start.sh <<E2
 #!/usr/bin/env bash
@@ -71,6 +94,22 @@ chmod +x start.sh
 # Ensure minecraft owns newly created files
 chown -R minecraft:minecraft /opt/minecraft
 
-runuser -u minecraft -- bash -lc "cd /opt/minecraft && nohup ./start.sh >>\"${LOG_FILE}\" 2>&1 &"
+# Ensure screen runtime directory exists with correct ownership and mode
+# NOTE: In LXC, utmp group may not exist; fall back to root:root with 0777
+if getent group utmp >/dev/null 2>&1; then
+  install -d -m 0775 -o root -g utmp /run/screen || true
+  printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
+else
+  install -d -m 0777 -o root -g root /run/screen || true
+  printf 'd /run/screen 0777 root root -\n' > /etc/tmpfiles.d/screen.conf
+fi
+systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
 
-echo "✅ Minecraft Java setup complete (LXC). Log: ${LOG_FILE}"
+# Start server in screen session (consistent with VM script and README)
+if command -v runuser >/dev/null 2>&1; then
+  runuser -u minecraft -- bash -lc 'cd /opt/minecraft && screen -dmS minecraft ./start.sh'
+else
+  su -s /bin/bash -c 'cd /opt/minecraft && screen -dmS minecraft ./start.sh' minecraft
+fi
+
+echo "✅ Minecraft Java setup complete (LXC). Attach: screen -r minecraft"

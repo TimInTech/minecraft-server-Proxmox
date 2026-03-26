@@ -1,16 +1,14 @@
-# Minecraft Server on Proxmox – Version 2.0 (updated 2025-11-08)
+# Minecraft Server on Proxmox – Version 3.0 (updated 2026-03-26)
 
-<img title="" src="assets/banner.png" alt="Banner" width="326" data-align="center">
+![Banner](assets/banner.png)
 
-<p align="center"><em>Minecraft Server on Proxmox</em></p>
+*Minecraft Server on Proxmox*
 
-<p align="center">
-  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow"></a>
-  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/fork"><img alt="GitHub Forks" src="https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat"></a>
-  <a href="https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat"></a>
-  <a href="https://buymeacoffee.com/timintech"><img alt="Buy Me A Coffee" src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat"></a>
-</p>
+[![GitHub Stars](https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow)](https://github.com/TimInTech/minecraft-server-Proxmox/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue)](https://github.com/TimInTech/minecraft-server-Proxmox/fork)
+[![License](https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat)](https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat)](https://buymeacoffee.com/timintech)
 
 ---
 
@@ -20,20 +18,39 @@
 - Simulation Guide: [SIMULATION.md](SIMULATION.md)
 - Bedrock Networking: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)
 - Copilot Workflow: [.github/copilot-instructions.md](.github/copilot-instructions.md)
-- Issues — https://github.com/TimInTech/minecraft-server-Proxmox/issues
+- Issues — <https://github.com/TimInTech/minecraft-server-Proxmox/issues>
+
+---
+
+## What's New in v3.0
+
+### Breaking Changes & Critical Fixes
+
+- **PaperMC API migrated to Fill v3** — The old `api.papermc.io/v2/` endpoint stopped receiving new builds on December 31, 2025 and will be fully disabled on July 1, 2026. All scripts (`setup_minecraft.sh`, `setup_minecraft_lxc.sh`, embedded `update.sh`) now use the new `fill.papermc.io/v3/` REST API. This resolves Issues [#66](https://github.com/TimInTech/minecraft-server-Proxmox/issues/66) and [#70](https://github.com/TimInTech/minecraft-server-Proxmox/issues/70).
+- **User-Agent header required** — Fill v3 rejects or rate-limits requests without a proper `User-Agent`. All API calls now include `minecraft-server-Proxmox/<version>`.
+- **Download URLs embedded in API response** — Downloads now come from `fill-data.papermc.io`. URLs are no longer manually constructed but read directly from the API response.
+- **Stable channel filtering** — The new API returns builds across channels (alpha, beta, stable, recommended). Scripts now filter for `channel == "STABLE"` to avoid pulling experimental builds.
+
+### Other Improvements
+
+- **LXC script: `screen` support added** — `setup_minecraft_lxc.sh` now installs `screen`, creates the `/run/screen` socket directory, and starts the server inside a screen session (consistent with VM script and README instructions). Resolves Issue [#67](https://github.com/TimInTech/minecraft-server-Proxmox/issues/67).
+- **Minecraft versioning note** — Starting in 2026, Mojang uses a new versioning scheme (`26.1` instead of `1.x.x`). The scripts handle this transparently since they always pull the latest version from the API.
+- **Java badge corrected** — Java 21 is the minimum requirement (Java 17 is no longer sufficient for current PaperMC builds).
+- **Bedrock regex updated** — The URL scraping pattern now also matches the new `26.x` versioning scheme used since February 2026.
+- **File ownership fix** — `eula.txt` and other generated files are now created with correct ownership from the start.
 
 ---
 
 ## ✅ Requirements
 
 - Proxmox VE: 7.4+ / 8.x / 9.x
-- Guest OS: Debian 12/13 or Ubuntu 24.04
+- Guest OS: Debian 12/13 or Ubuntu 22.04 / 24.04
 - CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
 
 Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
-**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see [Configuration](#configuration)).
+**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see below). Bedrock installer enforces SHA256 checksum by default.
 
 ---
 
@@ -45,18 +62,18 @@ This repository provisions a performant Minecraft server (Java & Bedrock) on Pro
 
 ## Technologies & Dependencies
 
-![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)
-![Debian](https://img.shields.io/badge/Debian-12%20%2F%2013-A81D33?logo=debian&logoColor=white)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu&logoColor=white)
-![Java](https://img.shields.io/badge/OpenJDK-17%20%2F%2021-007396?logo=java&logoColor=white)
-![Minecraft](https://img.shields.io/badge/Minecraft-Java%20%2F%20Bedrock-62B47A?logo=minecraft&logoColor=white)
-![Bash](https://img.shields.io/badge/Bash-%E2%9C%94-4EAA25?logo=gnubash&logoColor=white)
-![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)
-![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)
+[![Proxmox](https://img.shields.io/badge/Proxmox-VE-EE7F2D?logo=proxmox&logoColor=white)](https://pve.proxmox.com/)
+[![Debian](https://img.shields.io/badge/Debian-12%20%2F%2013-A81D33?logo=debian&logoColor=white)](https://www.debian.org/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04%20%2F%2024.04-E95420?logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+[![Java](https://img.shields.io/badge/OpenJDK-21-007396?logo=java&logoColor=white)](https://openjdk.org/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-Java%20%2F%20Bedrock-62B47A?logo=minecraft&logoColor=white)](https://www.minecraft.net/)
+[![Bash](https://img.shields.io/badge/Bash-%E2%9C%94-4EAA25?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![Systemd](https://img.shields.io/badge/systemd-%E2%9C%94-FFDD00?logo=linux&logoColor=black)](https://systemd.io/)
+[![Screen](https://img.shields.io/badge/screen-%E2%9C%94-0077C2?logo=gnu&logoColor=white)](https://www.gnu.org/software/screen/)
 
 ## 📊 Status
 
-Stable. VM and LXC tested. Bedrock updates remain manual.
+Stable. VM and LXC tested. PaperMC API upgraded to Fill v3 (March 2026). Bedrock updates remain manual.
 
 ## Quickstart
 
@@ -69,7 +86,7 @@ chmod +x setup_minecraft.sh
 sudo -u minecraft screen -r minecraft
 ```
 
-> **Debian 12/13:** If you encounter screen socket errors, see [Integrity & Firewall](#integrity--firewall) for `/run/screen` setup.
+> Debian 12/13: Ensure `/run/screen` exists with `root:utmp` and mode `0775` (see below).
 
 ### VM (Static IP)
 
@@ -152,18 +169,20 @@ crontab -e
 
 ## ♻ Auto-Update
 
-Java Edition: `update.sh` (created by `setup_minecraft.sh`) pulls the latest PaperMC build with SHA256 and size validation.
+Java Edition: `update.sh` (created by `setup_minecraft.sh`) pulls the latest stable PaperMC build via Fill v3 API with SHA256 and size validation.
 
 ```bash
 cd /opt/minecraft && ./update.sh
 crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
-> Bedrock requires a manual download. See [Integrity & Firewall](#integrity--firewall) for checksum enforcement details.
+
+> Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
+> **Checksum enforcement:** Bedrock installer requires `REQUIRED_BEDROCK_SHA256` and validates the ZIP before extraction.
+
 ## Configuration
 
 ### JVM memory (Java)
-
 
 The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `1024M/2048M` and an `Xmx` cap of `≤16G`. Override in `/opt/minecraft/start.sh`.
 
@@ -171,8 +190,9 @@ The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `1024M/2048M`
 
 **Java (PaperMC):**
 
-- Paper download is verified via **SHA256** in installer/updater.
+- Paper download is verified via **SHA256** from the Fill v3 API response.
 - Minimum size `server.jar > 5 MB` to avoid saving HTML error pages.
+- Only **STABLE** channel builds are downloaded (alpha/beta/experimental excluded).
 
 **Bedrock:**
 
@@ -187,6 +207,8 @@ printf 'd /run/screen 0775 root utmp -\n' | sudo tee /etc/tmpfiles.d/screen.conf
 sudo systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf
 ```
 
+> **LXC Note:** In unprivileged LXC containers, the `utmp` group may not exist. The scripts handle this gracefully by falling back to `root:root` with mode `0777` if needed.
+
 **UFW:**
 
 ```bash
@@ -195,6 +217,19 @@ sudo ufw allow 25565/tcp
 sudo ufw allow 19132/udp
 sudo ufw enable
 ```
+
+## PaperMC API Migration (v2 → Fill v3)
+
+If you have an existing installation using the old `api.papermc.io/v2/` endpoint, re-run the setup script or manually update your `update.sh` in `/opt/minecraft/`. The key changes are:
+
+| Aspect | Old (v2) | New (Fill v3) |
+|---|---|---|
+| Base URL | `api.papermc.io/v2/projects/paper` | `fill.papermc.io/v3/projects/paper` |
+| Build selection | `jq '.builds \| last'` | `jq 'map(select(.channel=="STABLE")) \| .[0]'` |
+| Download URL | Manually constructed | Embedded in `.downloads."server:default".url` |
+| SHA256 | `.downloads.application.sha256` | `.downloads."server:default".checksums.sha256` |
+| User-Agent | Not required | **Required** (rejected/rate-limited without) |
+| Shutdown | July 1, 2026 | Active and supported |
 
 ## 🕹 Admin/Commands
 
@@ -206,18 +241,26 @@ If this project saves you time, consider supporting continued maintenance via [B
 
 ## Troubleshooting
 
-- Not enough RAM in LXC → reduce values in `start.sh`.
-- Missing `/run/screen` → see [Integrity & Firewall](#integrity--firewall) section for setup commands.
-- Bedrock ZIP MIME-Type issue → revisit the Mojang download page.
+- **PaperMC download fails with 404** → You are still using the old v2 API. Update your scripts to Fill v3 (re-run installer or see migration table above).
+- **Not enough RAM in LXC** → Reduce values in `start.sh`.
+- **Missing `/run/screen`** → Follow the "screen socket" section above.
+- **`/run/screen` mode 777 in LXC** → In unprivileged containers, `utmp` may not exist. Use `chmod 0777 /run/screen` or ensure the `utmp` group is mapped.
+- **Bedrock ZIP MIME-Type issue** → Revisit the Mojang download page.
+- **Java 17 no longer works** → PaperMC 1.21.8+ requires Java 21. Re-run the installer to get Corretto 21 fallback.
 
-Use the PR template. Do not execute anything in this workspace. See **[SIMULATION.md](SIMULATION.md)** for safe workflow details and **[.github/copilot-instructions.md](.github/copilot-instructions.md)** for step-by-step Copilot CLI workflow.
+Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
 
+For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
+
+> **Simulation CLI:** For step-by-step Copilot CLI workflow, see [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
 ## References
 
-- PaperMC: [https://papermc.io/](https://papermc.io/)
-- Proxmox Wiki: [https://pve.proxmox.com/wiki/Main_Page](https://pve.proxmox.com/wiki/Main_Page)
-- Mojang Bedrock Server: [https://www.minecraft.net/en-us/download/server/bedrock](https://www.minecraft.net/en-us/download/server/bedrock)
+- PaperMC: <https://papermc.io/>
+- PaperMC Fill v3 API Docs: <https://docs.papermc.io/misc/downloads-service/>
+- PaperMC Fill v3 Swagger: <https://fill.papermc.io/swagger-ui/index.html>
+- Proxmox Wiki: <https://pve.proxmox.com/wiki/Main_Page>
+- Mojang Bedrock Server: <https://www.minecraft.net/en-us/download/server/bedrock>
 
 ## License
 
