@@ -1,6 +1,6 @@
 # Minecraft Server on Proxmox – Version 3.0 (updated 2026-05-01)
 
-![Banner](assets/banner.png)
+<img src="assets/banner.png" alt="Minecraft Server on Proxmox Banner" width="600">
 
 *Minecraft Server on Proxmox*
 
