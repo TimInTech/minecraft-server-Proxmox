@@ -7,7 +7,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow)](https://github.com/TimInTech/minecraft-server-Proxmox/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue)](https://github.com/TimInTech/minecraft-server-Proxmox/fork)
 [![License](https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat)](LICENSE)
-[![Latest Release](https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?include_prereleases&style=flat)](https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?style=flat)](https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat)](https://buymeacoffee.com/timintech)
 
 ---
