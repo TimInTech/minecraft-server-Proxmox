@@ -36,16 +36,24 @@ fi
 ACTUAL_SHA=$(sha256sum bedrock-server.zip | awk '{print $1}')
 echo "bedrock-server.zip sha256: ${ACTUAL_SHA}"
 
-# NOTE: Enforce checksum by default; require REQUIRED_BEDROCK_SHA256 when REQUIRE_BEDROCK_SHA=1
-if [[ "${REQUIRE_BEDROCK_SHA:=1}" = "1" ]]; then
+# Checksum enforcement:
+#   REQUIRE_BEDROCK_SHA=0 (default) – SHA is computed and printed; no pre-set value required.
+#   REQUIRE_BEDROCK_SHA=1           – strict mode; set REQUIRED_BEDROCK_SHA256 before running.
+# Mojang does not publish upstream checksums, so default is 0.
+# To record a known-good SHA for future verification: note the printed sha256 above.
+if [[ "${REQUIRE_BEDROCK_SHA:=0}" = "1" ]]; then
   if [[ -z "${REQUIRED_BEDROCK_SHA256:-}" ]]; then
-    echo "ERROR: Set REQUIRED_BEDROCK_SHA256 to a known-good value (export REQUIRED_BEDROCK_SHA256=<sha>)" >&2
+    echo "ERROR: REQUIRE_BEDROCK_SHA=1 but REQUIRED_BEDROCK_SHA256 is not set." >&2
+    echo "       Run once with REQUIRE_BEDROCK_SHA=0, record the printed SHA, then set REQUIRED_BEDROCK_SHA256." >&2
     exit 1
   fi
   if [[ "${ACTUAL_SHA}" != "${REQUIRED_BEDROCK_SHA256}" ]]; then
     echo "ERROR: SHA256 mismatch (expected ${REQUIRED_BEDROCK_SHA256}, got ${ACTUAL_SHA})" >&2
     exit 1
   fi
+  echo "SHA256 verified against REQUIRED_BEDROCK_SHA256."
+else
+  echo "INFO: Checksum enforcement disabled (REQUIRE_BEDROCK_SHA=0). Record the SHA above if strict mode is needed."
 fi
 
 # Test and extract the archive
@@ -83,4 +91,4 @@ else
   su -s /bin/bash -c 'cd /opt/minecraft-bedrock && screen -dmS bedrock ./start.sh' minecraft
 fi
 
-echo "✅ Setup complete. Attach: screen -r bedrock"
+echo "✅ Bedrock setup complete. Attach: screen -r bedrock"
