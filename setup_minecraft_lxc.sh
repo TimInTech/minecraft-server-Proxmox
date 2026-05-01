@@ -45,7 +45,7 @@ fi
 # ── Download latest stable PaperMC via Fill v3 API ──
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions | last')
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions' | jq -r '.[keys_unsorted[0]][0]')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
