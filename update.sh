@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ── PaperMC Updater ── v3.0 ──
-# Uses PaperMC Fill v3 API (fill.papermc.io)
-
 cd /opt/minecraft || exit 1
 
 USER_AGENT="minecraft-server-Proxmox/3.0 (https://github.com/TimInTech/minecraft-server-Proxmox)"
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions | keys | last')
+# NOTE: Semantic version sort (not lexicographic) to handle e.g. 1.9 vs 1.21 correctly.
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
+  jq -r '.versions | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
 
-# Filter for STABLE channel; fall back to latest build if no stable exists yet
 STABLE_BUILD=$(printf '%s' "$BUILDS_JSON" | jq -r '
   (map(select(.channel == "STABLE")) | sort_by(.id) | last) //
   (sort_by(.id) | last)')

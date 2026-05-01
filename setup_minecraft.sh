@@ -45,7 +45,9 @@ fi
 # ── Download latest stable PaperMC via Fill v3 API ──
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions | keys | last')
+# NOTE: Semantic version sort (not lexicographic) to handle e.g. 1.9 vs 1.21 correctly.
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
+  jq -r '.versions | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
@@ -101,7 +103,8 @@ cd /opt/minecraft || exit 1
 USER_AGENT="minecraft-server-Proxmox/3.0 (https://github.com/TimInTech/minecraft-server-Proxmox)"
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | jq -r '.versions | keys | last')
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
+  jq -r '.versions | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
