@@ -1,4 +1,4 @@
-# Minecraft Server on Proxmox – Version 3.0 (updated 2026-03-26)
+# Minecraft Server on Proxmox – Version 3.0 (updated 2026-05-01)
 
 ![Banner](assets/banner.png)
 
@@ -26,7 +26,8 @@
 
 ### Breaking Changes & Critical Fixes
 
-- **PaperMC API migrated to Fill v3** — The old `api.papermc.io/v2/` endpoint stopped receiving new builds on December 31, 2025 and will be fully disabled on July 1, 2026. All scripts (`setup_minecraft.sh`, `setup_minecraft_lxc.sh`, embedded `update.sh`) now use the new `fill.papermc.io/v3/` REST API. This resolves Issues [#66](https://github.com/TimInTech/minecraft-server-Proxmox/issues/66) and [#70](https://github.com/TimInTech/minecraft-server-Proxmox/issues/70).
+- **PaperMC API migrated to Fill v3** — The old `api.papermc.io/v2/` endpoint stopped receiving new builds on December 31, 2025 and will be fully disabled on July 1, 2026. All scripts (`setup_minecraft.sh`, `setup_minecraft_lxc.sh`, embedded `update.sh`) now use the new `fill.papermc.io/v3/` REST API. This resolves Issues [#66](https://github.com/TimInTech/minecraft-server-Proxmox/issues/66), [#70](https://github.com/TimInTech/minecraft-server-Proxmox/issues/70) and [#71](https://github.com/TimInTech/minecraft-server-Proxmox/issues/71).
+- **`jq` version fix** — `.versions | keys | last` is now used to reliably determine the latest Minecraft version from the Fill v3 object response. Fixes `Cannot index object with number` errors on all platforms. Resolves [#71](https://github.com/TimInTech/minecraft-server-Proxmox/issues/71).
 - **User-Agent header required** — Fill v3 rejects or rate-limits requests without a proper `User-Agent`. All API calls now include `minecraft-server-Proxmox/<version>`.
 - **Download URLs embedded in API response** — Downloads now come from `fill-data.papermc.io`. URLs are no longer manually constructed but read directly from the API response.
 - **Stable channel filtering** — The new API returns builds across channels (alpha, beta, stable, recommended). Scripts now filter for `channel == "STABLE"` to avoid pulling experimental builds.
@@ -34,6 +35,8 @@
 ### Other Improvements
 
 - **LXC script: `screen` support added** — `setup_minecraft_lxc.sh` now installs `screen`, creates the `/run/screen` socket directory, and starts the server inside a screen session (consistent with VM script and README instructions). Resolves Issue [#67](https://github.com/TimInTech/minecraft-server-Proxmox/issues/67).
+- **Bedrock SHA default changed to 0** — `REQUIRE_BEDROCK_SHA` now defaults to `0`. Mojang does not publish upstream checksums, so the previous default of `1` was an unresolvable blocker for all users. The SHA256 is still computed and printed for manual verification.
+- **CT helper: random password** — `proxmox_create_ct_bedrock.sh` now generates a random 16-char alphanumeric password for the CT root account (printed at end of setup). The hardcoded `changeme` has been removed.
 - **Minecraft versioning note** — Starting in 2026, Mojang uses a new versioning scheme (`26.1` instead of `1.x.x`). The scripts handle this transparently since they always pull the latest version from the API.
 - **Java badge corrected** — Java 21 is the minimum requirement (Java 17 is no longer sufficient for current PaperMC builds).
 - **Bedrock regex updated** — The URL scraping pattern now also matches the new `26.x` versioning scheme used since February 2026.
@@ -50,7 +53,7 @@
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
 
 Java 21 is required. If OpenJDK 21 is missing in your repositories, the installers automatically fall back to Amazon Corretto 21 (APT with signed-by keyring).
-**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see below). Bedrock installer enforces SHA256 checksum by default.
+**Note:** UFW must be installed before running any `ufw` commands. JVM memory is auto-sized by the installer (see below).
 
 ---
 
@@ -177,8 +180,7 @@ crontab -e
 0 4 * * 0 /opt/minecraft/update.sh >> /var/log/minecraft-update.log 2>&1
 ```
 
-> Bedrock requires a manual download. `setup_bedrock.sh` enforces SHA256 by default (see below).
-> **Checksum enforcement:** Bedrock installer requires `REQUIRED_BEDROCK_SHA256` and validates the ZIP before extraction.
+> Bedrock requires a manual download. Re-run `setup_bedrock.sh` to update.
 
 ## Configuration
 
@@ -196,8 +198,14 @@ The installer sets `Xms ≈ RAM/4` and `Xmx ≈ RAM/2` with floors `1024M/2048M`
 
 **Bedrock:**
 
-- Default: `REQUIRE_BEDROCK_SHA=1`. Set `REQUIRED_BEDROCK_SHA256=<sha>`. Override with `REQUIRE_BEDROCK_SHA=0`.
-- The installer validates MIME type via HTTP HEAD (application/zip|octet-stream), checks size, and tests the ZIP via `unzip -tq` before extracting.
+| Mode | How to use | Behaviour |
+|---|---|---|
+| Default (`REQUIRE_BEDROCK_SHA=0`) | Just run `setup_bedrock.sh` | SHA256 is computed and printed; no pre-set value required. |
+| Strict (`REQUIRE_BEDROCK_SHA=1`) | `export REQUIRED_BEDROCK_SHA256=<sha>` before running | Script aborts if computed SHA does not match. |
+
+Mojang does not publish upstream checksums. To record a known-good value: run once with default mode, note the printed SHA, then set `REQUIRED_BEDROCK_SHA256` for future runs.
+
+Additionally the installer validates MIME type via HTTP HEAD (`application/zip|octet-stream`), checks size (>1 MB), and tests the ZIP via `unzip -tq` before extracting.
 
 **screen socket (Debian 12/13):**
 
@@ -218,6 +226,26 @@ sudo ufw allow 19132/udp
 sudo ufw enable
 ```
 
+## Proxmox CT Helper (Bedrock)
+
+`scripts/proxmox_create_ct_bedrock.sh` creates a Debian 12 container and installs Bedrock automatically.
+
+```bash
+bash scripts/proxmox_create_ct_bedrock.sh
+```
+
+A random 16-char root password is generated and printed at the end. **Change it immediately** after first login:
+
+```bash
+pct exec 121 -- passwd root
+```
+
+Override defaults via environment variables:
+
+```bash
+STORE=local CTID=122 MEM=4096 bash scripts/proxmox_create_ct_bedrock.sh
+```
+
 ## PaperMC API Migration (v2 → Fill v3)
 
 If you have an existing installation using the old `api.papermc.io/v2/` endpoint, re-run the setup script or manually update your `update.sh` in `/opt/minecraft/`. The key changes are:
@@ -225,6 +253,7 @@ If you have an existing installation using the old `api.papermc.io/v2/` endpoint
 | Aspect | Old (v2) | New (Fill v3) |
 |---|---|---|
 | Base URL | `api.papermc.io/v2/projects/paper` | `fill.papermc.io/v3/projects/paper` |
+| Version field | Array → `.versions \| last` | Object → `.versions \| keys \| last` |
 | Build selection | `jq '.builds \| last'` | `jq 'map(select(.channel=="STABLE")) \| .[0]'` |
 | Download URL | Manually constructed | Embedded in `.downloads."server:default".url` |
 | SHA256 | `.downloads.application.sha256` | `.downloads."server:default".checksums.sha256` |
@@ -241,12 +270,14 @@ If this project saves you time, consider supporting continued maintenance via [B
 
 ## Troubleshooting
 
+- **`jq: Cannot index object with number`** → Old `.versions | last` bug. Re-download the script from `main` (fixed in [commit 723d22b](https://github.com/TimInTech/minecraft-server-Proxmox/commit/723d22b877ccac41aa6247b8d55c7bb21ab236f6)).
 - **PaperMC download fails with 404** → You are still using the old v2 API. Update your scripts to Fill v3 (re-run installer or see migration table above).
 - **Not enough RAM in LXC** → Reduce values in `start.sh`.
 - **Missing `/run/screen`** → Follow the "screen socket" section above.
 - **`/run/screen` mode 777 in LXC** → In unprivileged containers, `utmp` may not exist. Use `chmod 0777 /run/screen` or ensure the `utmp` group is mapped.
 - **Bedrock ZIP MIME-Type issue** → Revisit the Mojang download page.
 - **Java 17 no longer works** → PaperMC 1.21.8+ requires Java 21. Re-run the installer to get Corretto 21 fallback.
+- **Bedrock SHA mismatch with `REQUIRE_BEDROCK_SHA=1`** → Mojang does not publish upstream checksums. Run once with `REQUIRE_BEDROCK_SHA=0`, record the printed SHA, then set `REQUIRED_BEDROCK_SHA256`.
 
 Use the PR template. Do not execute anything in this workspace. See **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
 
@@ -265,5 +296,3 @@ For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 ## License
 
 [MIT](LICENSE)
-
-> Proxmox Helper: `scripts/proxmox_create_ct_bedrock.sh` creates a Debian 12/13 container and installs Bedrock.
