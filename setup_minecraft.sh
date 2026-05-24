@@ -46,8 +46,8 @@ fi
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
 # NOTE: Semantic version sort (not lexicographic) to handle e.g. 1.9 vs 1.21 correctly.
-LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
-  jq -r '.versions | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")')
+LATEST_VERSION=$(curl -s -H "User-Agent: $USER_AGENT" https://fill.papermc.io/v3/projects/paper | \
+    jq -r '.versions | to_entries[0] | .value[0]')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
