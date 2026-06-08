@@ -11,6 +11,7 @@
 [![License](https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?style=flat)](https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat)](https://buymeacoffee.com/timintech)
+[![Deutsch](https://img.shields.io/badge/Sprache-Deutsch-000000?style=flat&logo=googletranslate&logoColor=white)](README.de.md)
 
 ---
 
