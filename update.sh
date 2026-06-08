@@ -6,9 +6,12 @@ cd /opt/minecraft || exit 1
 USER_AGENT="minecraft-server-Proxmox/3.0 (https://github.com/TimInTech/minecraft-server-Proxmox)"
 FILL_API="https://fill.papermc.io/v3/projects/paper"
 
-# NOTE: Semantic version sort (not lexicographic) to handle e.g. 1.9 vs 1.21 correctly.
+# NOTE: Fill v3 groups versions under keys (e.g. "26.1" → ["26.1.2","26.1.1"]).
+# Semantic-sort the group keys (not lexicographic, to handle 1.9 vs 1.21), pick the
+# newest group, then take its newest patch. Returning the bare group key would 404
+# on /versions/<v>/builds (issue #74).
 LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
-  jq -r '.versions | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")')
+  jq -r '.versions as $v | ($v | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")) as $g | $v[$g][0]')
 echo "Latest Minecraft version: ${LATEST_VERSION}"
 
 BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")

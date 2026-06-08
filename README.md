@@ -1,4 +1,6 @@
-# Minecraft Server on Proxmox – Version 3.0 (updated 2026-05-01)
+# Minecraft Server on Proxmox – Version 3.0 (updated 2026-06-08)
+
+> 🇩🇪 Deutsche Version: [README.de.md](README.de.md)
 
 <img src="assets/banner.png" alt="Minecraft Server on Proxmox Banner" width="600">
 
@@ -27,7 +29,7 @@
 ### Breaking Changes & Critical Fixes
 
 - **PaperMC API migrated to Fill v3** — The old `api.papermc.io/v2/` endpoint stopped receiving new builds on December 31, 2025 and will be fully disabled on July 1, 2026. All scripts (`setup_minecraft.sh`, `setup_minecraft_lxc.sh`, embedded `update.sh`) now use the new `fill.papermc.io/v3/` REST API. This resolves Issues [#66](https://github.com/TimInTech/minecraft-server-Proxmox/issues/66), [#70](https://github.com/TimInTech/minecraft-server-Proxmox/issues/70) and [#71](https://github.com/TimInTech/minecraft-server-Proxmox/issues/71).
-- **`jq` version fix** — `.versions | keys | last` is now used to reliably determine the latest Minecraft version from the Fill v3 object response. Fixes `Cannot index object with number` errors on all platforms. Resolves [#71](https://github.com/TimInTech/minecraft-server-Proxmox/issues/71).
+- **`jq` version fix** — The latest Minecraft version is now resolved by semantic-sorting the Fill v3 version-group keys, selecting the newest group, then taking its newest patch (`.versions as $v | (… sort | last …) as $g | $v[$g][0]`). This fixes `Cannot index object with number` errors **and** the `curl: (22) 404` failures that occurred when the previous logic returned a bare group key (e.g. `26.1`) instead of a real version (e.g. `26.1.2`). Resolves [#71](https://github.com/TimInTech/minecraft-server-Proxmox/issues/71) and [#74](https://github.com/TimInTech/minecraft-server-Proxmox/issues/74).
 - **User-Agent header required** — Fill v3 rejects or rate-limits requests without a proper `User-Agent`. All API calls now include `minecraft-server-Proxmox/<version>`.
 - **Download URLs embedded in API response** — Downloads now come from `fill-data.papermc.io`. URLs are no longer manually constructed but read directly from the API response.
 - **Stable channel filtering** — The new API returns builds across channels (alpha, beta, stable, recommended). Scripts now filter for `channel == "STABLE"` to avoid pulling experimental builds.
@@ -253,7 +255,7 @@ If you have an existing installation using the old `api.papermc.io/v2/` endpoint
 | Aspect | Old (v2) | New (Fill v3) |
 |---|---|---|
 | Base URL | `api.papermc.io/v2/projects/paper` | `fill.papermc.io/v3/projects/paper` |
-| Version field | Array → `.versions \| last` | Object → `.versions \| keys \| last` |
+| Version field | Array → `.versions \| last` | Object → `.versions \| .[<newest group>][0]` |
 | Build selection | `jq '.builds \| last'` | `jq 'map(select(.channel=="STABLE")) \| .[0]'` |
 | Download URL | Manually constructed | Embedded in `.downloads."server:default".url` |
 | SHA256 | `.downloads.application.sha256` | `.downloads."server:default".checksums.sha256` |
@@ -271,7 +273,7 @@ If this project saves you time, consider supporting continued maintenance via [B
 ## Troubleshooting
 
 - **`jq: Cannot index object with number`** → Old `.versions | last` bug. Re-download the script from `main` (fixed in [commit 723d22b](https://github.com/TimInTech/minecraft-server-Proxmox/commit/723d22b877ccac41aa6247b8d55c7bb21ab236f6)).
-- **PaperMC download fails with 404** → You are still using the old v2 API. Update your scripts to Fill v3 (re-run installer or see migration table above).
+- **PaperMC download fails with 404 (`curl: (22) ... 404`)** → Either you are still using the old v2 API, or you have an older Fill v3 script whose version logic returned a bare version-group key (e.g. `26.1`) instead of a real version (e.g. `26.1.2`), causing the `/versions/<v>/builds` request to 404. Re-download the script from `main` (fixed in [#74](https://github.com/TimInTech/minecraft-server-Proxmox/issues/74)).
 - **Not enough RAM in LXC** → Reduce values in `start.sh`.
 - **Missing `/run/screen`** → Follow the "screen socket" section above.
 - **`/run/screen` mode 777 in LXC** → In unprivileged containers, `utmp` may not exist. Use `chmod 0777 /run/screen` or ensure the `utmp` group is mapped.
