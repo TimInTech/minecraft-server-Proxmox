@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation & Troubleshooting
+    url: https://github.com/TimInTech/minecraft-server-Proxmox#troubleshooting
+    about: Check the README troubleshooting section before opening an issue.
+  - name: 💬 Questions & Discussion
+    url: https://github.com/TimInTech/minecraft-server-Proxmox/issues
+    about: For general questions, please open a regular issue.

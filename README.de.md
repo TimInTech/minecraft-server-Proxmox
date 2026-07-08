@@ -15,6 +15,35 @@
 
 ---
 
+## ✨ Warum dieses Repo?
+
+- 🚀 **Installation mit einem Befehl** — ein einziges Skript richtet in Minuten einen produktionsreifen Minecraft-Server (Java **oder** Bedrock) auf Proxmox ein.
+- 🧩 **VM *und* LXC/CT** — unterstützt beide Proxmox-Virtualisierungsmodelle, inkl. fertigem CT-Helfer für Bedrock.
+- 🔄 **Selbst-aktualisierend** — `update.sh` zieht den neuesten **stabilen** PaperMC-Build über die neue **Fill-v3-API** mit SHA256- + Größenprüfung.
+- 🔒 **Sicher voreingestellt** — verifizierte Downloads, zufällige CT-Passwörter, UFW-Firewall-Anleitung und Integritätsprüfungen (keine HTML-Fehlerseiten als `server.jar`).
+- 🧠 **Automatisch dimensionierter JVM-Speicher** — skaliert zum Host (`Xms ≈ RAM/4`, `Xmx ≈ RAM/2`, gedeckelt bei 16 G) — kein manuelles Tuning nötig.
+- 🛡️ **CI-geprüft** — jedes Shell-Skript wird bei jedem Push mit ShellCheck geprüft.
+- 🇩🇪🇬🇧 **Zweisprachige Doku** — vollständige deutsche und englische Dokumentation, synchron gehalten.
+
+---
+
+## 📑 Inhaltsverzeichnis
+
+- [Voraussetzungen](#-voraussetzungen)
+- [Einführung](#einführung)
+- [Schnellstart](#schnellstart)
+- [Backups](#-backups)
+- [Auto-Update](#-auto-update)
+- [Konfiguration](#konfiguration)
+- [Integrität & Firewall](#integrität--firewall)
+- [Proxmox-CT-Helfer (Bedrock)](#proxmox-ct-helfer-bedrock)
+- [PaperMC-API-Migration (v2 → Fill v3)](#papermc-api-migration-v2--fill-v3)
+- [Admin/Befehle](#-adminbefehle)
+- [Fehlerbehebung](#fehlerbehebung)
+- [Referenzen](#referenzen)
+
+---
+
 ## Quick Links
 
 - Server-Befehle: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
@@ -295,6 +324,12 @@ Details zum sicheren Simulations-Workflow findest du in **[SIMULATION.md](SIMULA
 - PaperMC Fill v3 Swagger: <https://fill.papermc.io/swagger-ui/index.html>
 - Proxmox-Wiki: <https://pve.proxmox.com/wiki/Main_Page>
 - Mojang Bedrock Server: <https://www.minecraft.net/en-us/download/server/bedrock>
+
+## ⭐ Star-Verlauf
+
+Wenn dir dieses Projekt Zeit gespart hat: Ein ⭐ hilft anderen, es zu finden, und motiviert zur weiteren Pflege.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TimInTech/minecraft-server-Proxmox&type=Date)](https://star-history.com/#TimInTech/minecraft-server-Proxmox&Date)
 
 ## Lizenz
 
