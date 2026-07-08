@@ -15,6 +15,35 @@
 
 ---
 
+## ✨ Why this repo?
+
+- 🚀 **One-command install** — a single script provisions a production-ready Minecraft server (Java **or** Bedrock) on Proxmox in minutes.
+- 🧩 **VM *and* LXC/CT** — supports both Proxmox virtualization models, plus a ready-made CT helper for Bedrock.
+- 🔄 **Self-updating** — `update.sh` pulls the latest **stable** PaperMC build via the new **Fill v3 API** with SHA256 + size validation.
+- 🔒 **Secure by default** — verified downloads, random CT passwords, UFW firewall guidance, and integrity checks (no HTML error pages saved as `server.jar`).
+- 🧠 **Auto-sized JVM** — memory is scaled to the host (`Xms ≈ RAM/4`, `Xmx ≈ RAM/2`, capped at 16 G) — no manual tuning required.
+- 🛡️ **CI-linted** — every shell script is checked with ShellCheck on each push.
+- 🇩🇪🇬🇧 **Bilingual docs** — full English and German documentation, kept in sync.
+
+---
+
+## 📑 Table of Contents
+
+- [Requirements](#-requirements)
+- [Introduction](#introduction)
+- [Quickstart](#quickstart) — [VM](#vm-dhcp) · [LXC/CT](#lxcct) · [Bedrock](#bedrock)
+- [Backups](#-backups)
+- [Auto-Update](#-auto-update)
+- [Configuration](#configuration)
+- [Integrity & Firewall](#integrity--firewall)
+- [Proxmox CT Helper (Bedrock)](#proxmox-ct-helper-bedrock)
+- [PaperMC API Migration (v2 → Fill v3)](#papermc-api-migration-v2--fill-v3)
+- [Admin/Commands](#-admincommands)
+- [Troubleshooting](#troubleshooting)
+- [References](#references)
+
+---
+
 ## Quick Links
 
 - Server Commands: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
@@ -296,6 +325,12 @@ For safe simulation workflow details, see **[SIMULATION.md](SIMULATION.md)**.
 - PaperMC Fill v3 Swagger: <https://fill.papermc.io/swagger-ui/index.html>
 - Proxmox Wiki: <https://pve.proxmox.com/wiki/Main_Page>
 - Mojang Bedrock Server: <https://www.minecraft.net/en-us/download/server/bedrock>
+
+## ⭐ Star History
+
+If this project saved you time, a ⭐ helps others discover it and motivates continued maintenance.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TimInTech/minecraft-server-Proxmox&type=Date)](https://star-history.com/#TimInTech/minecraft-server-Proxmox&Date)
 
 ## License
 

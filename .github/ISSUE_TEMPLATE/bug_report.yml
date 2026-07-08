@@ -1,0 +1,63 @@
+name: 🐛 Bug Report
+description: Report a problem with a setup, update, or Bedrock script.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report! Please fill in the sections below so we can reproduce and fix the issue quickly.
+  - type: input
+    id: script
+    attributes:
+      label: Affected script
+      description: Which script did you run?
+      placeholder: e.g. setup_minecraft.sh, setup_minecraft_lxc.sh, setup_bedrock.sh, update.sh
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug, including the full error output.
+      placeholder: Paste the terminal output / error here.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the problem?
+      placeholder: |
+        1. Run `./setup_minecraft.sh`
+        2. See error ...
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did you run this?
+      options:
+        - Proxmox VM
+        - Proxmox LXC/CT
+        - Other (specify below)
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Proxmox VE, guest OS, and Java version.
+      placeholder: e.g. Proxmox VE 8.2, Debian 12, OpenJDK 21
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I re-downloaded the latest script from `main`.
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
