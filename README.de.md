@@ -10,6 +10,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue)](https://github.com/TimInTech/minecraft-server-Proxmox/fork)
 [![License](https://img.shields.io/github/license/TimInTech/minecraft-server-Proxmox?style=flat)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/TimInTech/minecraft-server-Proxmox?style=flat)](https://github.com/TimInTech/minecraft-server-Proxmox/releases/latest)
+[![Dokumentation](https://img.shields.io/badge/Doku-Landingpage-E05D44?style=flat&logo=readme&logoColor=white)](https://timintech.github.io/minecraft-server-Proxmox/de)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000&labelColor=grey&style=flat)](https://buymeacoffee.com/timintech)
 [![English](https://img.shields.io/badge/Language-English-000000?style=flat&logo=googletranslate&logoColor=white)](README.md)
 
@@ -46,6 +47,7 @@
 
 ## Quick Links
 
+- 🌐 **Interaktive Dokumentation & Guide:** <https://timintech.github.io/minecraft-server-Proxmox/de>
 - Server-Befehle: [SERVER_COMMANDS.md](SERVER_COMMANDS.md)
 - Simulations-Leitfaden: [SIMULATION.md](SIMULATION.md)
 - Bedrock-Netzwerk: [docs/BEDROCK_NETWORKING.md](docs/BEDROCK_NETWORKING.md)

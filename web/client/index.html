@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Title & SEO -->
+    <title>
+      Minecraft Server on Proxmox – Automated Java & Bedrock for VM & LXC
+    </title>
+    <meta
+      name="description"
+      content="Production-ready automated Minecraft Server setup (PaperMC Java & Bedrock Dedicated) on Proxmox VE. Supports VMs and LXC/CT with Fill v3 API, SHA256 validation, and auto-updates."
+    />
+    <meta
+      name="keywords"
+      content="Proxmox, Minecraft Server, PaperMC, Bedrock Server, LXC, Proxmox VE, Homelab, Fill v3, Automation"
+    />
+    <meta name="author" content="Tim Baumann (@TimInTech)" />
+
+    <!-- Open Graph / Facebook / Discord / Reddit -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://timintech.github.io/minecraft-server-Proxmox/"
+    />
+    <meta
+      property="og:title"
+      content="Minecraft Server on Proxmox – Automated Java & Bedrock"
+    />
+    <meta
+      property="og:description"
+      content="Production-ready automated Minecraft Server setup (PaperMC Java & Bedrock) on Proxmox VE VMs and LXC/CT."
+    />
+    <meta property="og:image" content="./assets/banner.png" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Minecraft Server on Proxmox – Automated Java & Bedrock"
+    />
+    <meta
+      name="twitter:description"
+      content="Production-ready automated Minecraft Server setup on Proxmox VE (VM & LXC/CT)."
+    />
+    <meta name="twitter:image" content="./assets/banner.png" />
+
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
+    <!-- Single Page App GitHub Pages Redirect Handler -->
+    <script>
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      })(window.location);
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

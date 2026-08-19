@@ -1,0 +1,32 @@
+import React from "react";
+
+export function Logo({
+  className = "w-8 h-8",
+  ...props
+}: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 64 64"
+      className={className}
+      aria-hidden="true"
+      {...props}
+    >
+      <rect width="64" height="64" rx="12" fill="#1c211f" />
+      {/* Top Block */}
+      <path d="M32 10 L48 18 L32 26 L16 18 Z" fill="#dea16e" />
+      <path d="M16 18 L32 26 L32 33 L16 25 Z" fill="#c9783a" />
+      <path d="M48 18 L32 26 L32 33 L48 25 Z" fill="#a45423" />
+
+      {/* Middle Block */}
+      <path d="M32 24 L48 32 L32 40 L16 32 Z" fill="#dea16e" opacity="0.9" />
+      <path d="M16 32 L32 40 L32 47 L16 39 Z" fill="#c9783a" opacity="0.9" />
+      <path d="M48 32 L32 40 L32 47 L48 39 Z" fill="#a45423" opacity="0.9" />
+
+      {/* Bottom Block */}
+      <path d="M32 38 L48 46 L32 54 L16 46 Z" fill="#dea16e" opacity="0.8" />
+      <path d="M16 46 L32 54 L32 60 L16 52 Z" fill="#c9783a" opacity="0.8" />
+      <path d="M48 46 L32 54 L32 60 L48 52 Z" fill="#a45423" opacity="0.8" />
+    </svg>
+  );
+}
