@@ -61,17 +61,17 @@ Idempotency:
 
 ### setup_minecraft_lxc.sh (LXC/Container – Java Edition)
 
-Similar to the VM installer but uses apt without sudo (typical for privileged containers) and does not write an update.sh. It:
+Similar to the VM installer but uses apt without sudo (typical for privileged containers). It:
 
 - Updates packages, installs screen, wget, curl, jq, unzip.
 - Installs OpenJDK 21 or falls back to Amazon Corretto 21 via APT keyring.
 - Sets up /opt/minecraft, downloads latest PaperMC server.jar with SHA256 verification and minimum size >5MB.
-- Accepts EULA and creates start.sh.
+- Accepts EULA and creates start.sh and update.sh.
 - Ensures `/run/screen` exists (0775, root:utmp), persists it via systemd-tmpfiles, and starts screen session minecraft as the minecraft user.
 
 Expected external state:
 
-- /opt/minecraft with server.jar, eula.txt, start.sh; screen session; port 25565 open in the container.
+- /opt/minecraft with server.jar, eula.txt, start.sh, update.sh; screen session; port 25565 open in the container.
 
 Notes for LXC:
 

@@ -2,9 +2,15 @@
 
 > 🇩🇪 Deutsche Version: [README.de.md](README.de.md)
 
-<img src="assets/banner.png" alt="Minecraft Server on Proxmox Banner" width="600">
+<p align="center">
+  <img src="assets/banner.png" alt="Minecraft Server on Proxmox Banner" width="600">
+</p>
 
-*Minecraft Server on Proxmox*
+<p align="center">
+  <img src="assets/demo.gif" alt="Live Verification Test of PaperMC LXC on Proxmox" width="750">
+  <br>
+  <em>Live verification &amp; health check of the PaperMC LXC container (CT 120) on Proxmox VE: container status, systemd service verification, live Fill v3 API update check, and port 25565 reachability.</em>
+</p>
 
 [![GitHub Stars](https://img.shields.io/github/stars/TimInTech/minecraft-server-Proxmox?style=flat&color=yellow)](https://github.com/TimInTech/minecraft-server-Proxmox/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/TimInTech/minecraft-server-Proxmox?style=flat&color=blue)](https://github.com/TimInTech/minecraft-server-Proxmox/fork)
@@ -295,9 +301,15 @@ If you have an existing installation using the old `api.papermc.io/v2/` endpoint
 | User-Agent | Not required | **Required** (rejected/rate-limited without) |
 | Shutdown | July 1, 2026 | Active and supported |
 
-## 🕹 Admin/Commands
+## 🕹 Admin & Server Management
 
-See **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
+<p align="center">
+  <img src="assets/server-usage.gif" alt="Post-Install Server Administration Demo" width="750">
+  <br>
+  <em>Practical post-install server management: inspecting systemd service health &amp; memory allocation, auditing <code>server.properties</code>, creating automated compressed world backups, and monitoring live server logs.</em>
+</p>
+
+For comprehensive in-game and console commands, operator setup, whitelist management, and command blocks, see **[SERVER_COMMANDS.md](SERVER_COMMANDS.md)**.
 
 ## ☕ Support / Donate
 

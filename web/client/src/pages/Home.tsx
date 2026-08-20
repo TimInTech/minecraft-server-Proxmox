@@ -32,6 +32,9 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<
     "vm" | "lxc" | "bedrock" | "update"
   >("vm");
+  const [activeDemoTab, setActiveDemoTab] = useState<
+    "verification" | "usage"
+  >("verification");
 
   const scrollToSection = (id: string) => {
     setMobileMenu(false);
@@ -43,10 +46,11 @@ export default function Home() {
 
   const navItems = [
     { id: "quickstart", label: t.nav.quickstart, kicker: "01" },
-    { id: "features", label: t.nav.features, kicker: "02" },
-    { id: "architecture", label: t.nav.architecture, kicker: "03" },
-    { id: "techspecs", label: t.nav.techSpecs, kicker: "04" },
-    { id: "documentation", label: t.nav.sources, kicker: "05" },
+    { id: "demos", label: t.nav.demos, kicker: "02" },
+    { id: "features", label: t.nav.features, kicker: "03" },
+    { id: "architecture", label: t.nav.architecture, kicker: "04" },
+    { id: "techspecs", label: t.nav.techSpecs, kicker: "05" },
+    { id: "documentation", label: t.nav.sources, kicker: "06" },
   ];
 
   return (
@@ -327,10 +331,138 @@ export default function Home() {
             </div>
           </section>
 
+          {/* Live Terminal Demos Section */}
+          <section id="demos" className="content-section">
+            <div className="section-marker">
+              <span>02</span>
+              <span>{t.demos.kicker}</span>
+            </div>
+
+            <div className="section-headline mt-6">
+              <div>
+                <h2>{t.demos.title}</h2>
+                <p className="lead">{t.demos.subtitle}</p>
+              </div>
+              <div className="checked-stamp">
+                <TerminalSquare size={20} />
+                <span>
+                  PROXMOX
+                  <br />
+                  <b>RECORDING</b>
+                </span>
+              </div>
+            </div>
+
+            {/* Demo Switcher Tabs */}
+            <div className="mt-8">
+              <div className="flex flex-wrap gap-2 border-b border-[#c9c5bc] pb-2">
+                <button
+                  onClick={() => setActiveDemoTab("verification")}
+                  className={`px-4 py-2 text-xs font-mono font-medium rounded transition-all flex items-center gap-2 ${
+                    activeDemoTab === "verification"
+                      ? "bg-[#1c211f] text-white shadow-sm border-b-2 border-[#c9783a]"
+                      : "bg-[#e5e1d9] text-[#4b514b] hover:bg-[#dedbd4]"
+                  }`}
+                >
+                  <ShieldCheck size={14} /> {t.demos.tabs.verification}
+                </button>
+                <button
+                  onClick={() => setActiveDemoTab("usage")}
+                  className={`px-4 py-2 text-xs font-mono font-medium rounded transition-all flex items-center gap-2 ${
+                    activeDemoTab === "usage"
+                      ? "bg-[#1c211f] text-white shadow-sm border-b-2 border-[#c9783a]"
+                      : "bg-[#e5e1d9] text-[#4b514b] hover:bg-[#dedbd4]"
+                  }`}
+                >
+                  <TerminalSquare size={14} /> {t.demos.tabs.usage}
+                </button>
+              </div>
+
+              {/* Demo Panel */}
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-[#c9783a]/15 text-[#a45423] text-[11px] font-mono rounded font-semibold uppercase tracking-wider">
+                    {t.demos[activeDemoTab].badge}
+                  </div>
+                  <h3 className="text-xl font-bold text-[#1e2522]">
+                    {t.demos[activeDemoTab].title}
+                  </h3>
+                  <p className="font-serif text-[#5e625b] text-base leading-relaxed">
+                    {t.demos[activeDemoTab].desc}
+                  </p>
+
+                  <ul className="space-y-2 pt-2">
+                    <li className="flex items-start gap-2.5 text-sm text-[#4b514b]">
+                      <CheckCircle2
+                        size={16}
+                        className="text-[#c9783a] shrink-0 mt-0.5"
+                      />
+                      <span>{t.demos[activeDemoTab].bullet1}</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-[#4b514b]">
+                      <CheckCircle2
+                        size={16}
+                        className="text-[#c9783a] shrink-0 mt-0.5"
+                      />
+                      <span>{t.demos[activeDemoTab].bullet2}</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 text-sm text-[#4b514b]">
+                      <CheckCircle2
+                        size={16}
+                        className="text-[#c9783a] shrink-0 mt-0.5"
+                      />
+                      <span>{t.demos[activeDemoTab].bullet3}</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="lg:col-span-7">
+                  <div className="rounded-lg overflow-hidden border border-[#2b332f] bg-[#1e1e2e] shadow-xl">
+                    <div className="bg-[#181825] px-4 py-2.5 border-b border-[#313244] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-[#f38ba8]/80 inline-block" />
+                        <span className="w-3 h-3 rounded-full bg-[#f9e2af]/80 inline-block" />
+                        <span className="w-3 h-3 rounded-full bg-[#a6e3a1]/80 inline-block" />
+                        <span className="ml-2 text-xs font-mono text-[#cdd6f4]/70">
+                          {activeDemoTab === "verification"
+                            ? "demo.tape · pve live verification"
+                            : "server-usage.tape · admin management"}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#313244] text-[#a6adc8]">
+                        VHS Terminal Demo
+                      </span>
+                    </div>
+                    <div className="p-1 bg-[#1e1e2e]">
+                      <img
+                        key={activeDemoTab}
+                        src={
+                          activeDemoTab === "verification"
+                            ? "./assets/demo.gif"
+                            : "./assets/server-usage.gif"
+                        }
+                        alt={t.demos[activeDemoTab].title}
+                        className="w-full h-auto rounded block"
+                        loading="lazy"
+                        decoding="async"
+                        width={1050}
+                        height={640}
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs font-mono text-[#8b897f]">
+                    ℹ️ Captured from real Proxmox VE test environment running
+                    Debian 12 LXC and PaperMC Java.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Features Section */}
           <section id="features" className="content-section">
             <div className="section-marker">
-              <span>02</span>
+              <span>03</span>
               <span>{t.features.kicker}</span>
             </div>
 
@@ -361,7 +493,7 @@ export default function Home() {
           {/* Architecture Section */}
           <section id="architecture" className="content-section flow-section">
             <div className="section-marker">
-              <span>03</span>
+              <span>04</span>
               <span>{t.architecture.kicker}</span>
             </div>
 
@@ -457,7 +589,7 @@ export default function Home() {
           {/* Technical Specs & Verification */}
           <section id="techspecs" className="content-section limits-section">
             <div className="section-marker">
-              <span>04</span>
+              <span>05</span>
               <span>{t.techSpecs.kicker}</span>
             </div>
 
@@ -516,7 +648,7 @@ export default function Home() {
             className="content-section source-section"
           >
             <div className="section-marker">
-              <span>05</span>
+              <span>06</span>
               <span>{t.sources.kicker}</span>
             </div>
 

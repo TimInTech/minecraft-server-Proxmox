@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ssh -o BatchMode=yes root@192.168.178.222 pct "$@"

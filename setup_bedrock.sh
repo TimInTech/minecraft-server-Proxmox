@@ -4,24 +4,30 @@ set -euo pipefail
 # ── Minecraft Bedrock Server Installer ── v3.0 ──
 
 apt update
-apt install -y unzip wget screen curl ca-certificates
+apt install -y unzip wget screen curl ca-certificates jq
 
 if ! id -u minecraft >/dev/null 2>&1; then useradd -r -m -s /bin/bash minecraft; fi
 mkdir -p /opt/minecraft-bedrock
 chown -R minecraft:minecraft /opt/minecraft-bedrock
 cd /opt/minecraft-bedrock
 
-# Scrape Mojang page for the latest Linux ZIP link
+# Fetch latest Linux ZIP link via official services API with HTML fallback
 # NOTE: Regex matches both old (1.x.x) and new (26.x) Mojang versioning schemes
-HTML=$(curl -fsSL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "https://www.minecraft.net/en-us/download/server/bedrock")
-LATEST_URL=$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1)
+API_JSON=$(curl -fsSL "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links" 2>/dev/null || true)
+LATEST_URL=$(printf '%s' "$API_JSON" | jq -r '.result.links[] | select(.downloadType=="serverBedrockLinux") | .downloadUrl // empty' 2>/dev/null || true)
+
 if [[ -z "${LATEST_URL:-}" ]]; then
-  echo "ERROR: Could not find Bedrock server URL on Mojang page" >&2
+  HTML=$(curl -fsSL --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "https://www.minecraft.net/en-us/download/server/bedrock" 2>/dev/null || true)
+  LATEST_URL=$(printf '%s' "$HTML" | grep -Eo 'https://www\.minecraft\.net/bedrockdedicatedserver/bin-linux/bedrock-server-[0-9.]+\.zip' | head -1 || true)
+fi
+
+if [[ -z "${LATEST_URL:-}" ]]; then
+  echo "ERROR: Could not find Bedrock server URL" >&2
   exit 1
 fi
 
 # HEAD check for MIME type and optional size
-if ! curl -fsSI --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "$LATEST_URL" | grep -iqE '^content-type:\s*(application/zip|application/octet-stream)'; then
+if ! curl -fsSI --http1.1 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36" "$LATEST_URL" | grep -iqE '^content-type:\s*(application/x-zip-compressed|application/zip|application/octet-stream)'; then
   echo "ERROR: Unexpected Content-Type for Bedrock ZIP (must be application/zip or octet-stream)" >&2
   exit 1
 fi

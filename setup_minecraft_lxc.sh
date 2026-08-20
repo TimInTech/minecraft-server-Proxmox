@@ -10,14 +10,21 @@ apt update
 apt install -y screen wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
-  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring (no sudo in LXC).
-  if apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
+  if command -v java >/dev/null 2>&1; then
+    local ver
+    ver=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)
+    if [[ -n "$ver" ]] && (( ver >= 25 )); then
+      return 0
+    fi
+  fi
+  # Prefer OpenJDK 25 / 21; fallback to Amazon Corretto 25 via APT keyring (no sudo in LXC).
+  if apt-get install -y openjdk-25-jre-headless 2>/dev/null || apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return 0; fi
   # NOTE: Adding a vendor APT source; restrict with signed-by keyring.
   install -d -m 0755 /usr/share/keyrings
-  curl -fsSL https://apt.corretto.aws/corretto.key | gpg --dearmor -o /usr/share/keyrings/corretto.gpg
+  curl -fsSL https://apt.corretto.aws/corretto.key | gpg --batch --yes --dearmor -o /usr/share/keyrings/corretto.gpg
   echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" > /etc/apt/sources.list.d/corretto.list
   apt-get update
-  apt-get install -y java-21-amazon-corretto-jre || apt-get install -y java-21-amazon-corretto-jdk
+  apt-get install -y java-25-amazon-corretto-jdk || apt-get install -y java-21-amazon-corretto-jdk
 }
 
 ensure_java
@@ -96,18 +103,71 @@ exec java -Xms${xms}M -Xmx${xmx}M -jar server.jar nogui
 E2
 chmod +x start.sh
 
+# Provide the updater script with the same integrity checks (Fill v3 API)
+cat > update.sh <<'E2'
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /opt/minecraft || exit 1
+
+USER_AGENT="minecraft-server-Proxmox/3.0 (https://github.com/TimInTech/minecraft-server-Proxmox)"
+FILL_API="https://fill.papermc.io/v3/projects/paper"
+
+LATEST_VERSION=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}" | \
+  jq -r '.versions as $v | ($v | keys | map(split(".") | map(tonumber)) | sort | last | map(tostring) | join(".")) as $g | $v[$g][0]')
+echo "Latest Minecraft version: ${LATEST_VERSION}"
+
+BUILDS_JSON=$(curl -fsSL -H "User-Agent: ${USER_AGENT}" "${FILL_API}/versions/${LATEST_VERSION}/builds")
+
+STABLE_BUILD=$(printf '%s' "$BUILDS_JSON" | jq -r '
+  (map(select(.channel == "STABLE")) | sort_by(.id) | last) //
+  (sort_by(.id) | last)')
+
+if [[ -z "$STABLE_BUILD" || "$STABLE_BUILD" == "null" ]]; then
+  echo "ERROR: No builds found for version ${LATEST_VERSION}" >&2
+  exit 1
+fi
+
+LATEST_BUILD=$(printf '%s' "$STABLE_BUILD" | jq -r '.id')
+DOWNLOAD_URL=$(printf '%s' "$STABLE_BUILD" | jq -r '.downloads."server:default".url // empty')
+EXPECTED_SHA=$(printf '%s' "$STABLE_BUILD" | jq -r '.downloads."server:default".checksums.sha256 // empty')
+
+if [[ -z "$DOWNLOAD_URL" ]]; then
+  echo "ERROR: No download URL in API response for build ${LATEST_BUILD}" >&2
+  exit 1
+fi
+
+echo "Downloading PaperMC build ${LATEST_BUILD}..."
+curl -fL -H "User-Agent: ${USER_AGENT}" --retry 3 --retry-delay 2 -o server.jar "$DOWNLOAD_URL"
+
+jar_size=$(stat -c '%s' server.jar)
+if (( jar_size < 5242880 )); then
+  echo "ERROR: Downloaded server.jar is too small (${jar_size} bytes). Likely an error page." >&2
+  exit 1
+fi
+
+ACTUAL_SHA=$(sha256sum server.jar | awk '{print $1}')
+if [[ -n "${EXPECTED_SHA}" && "${EXPECTED_SHA}" != "null" ]]; then
+  if [[ "${ACTUAL_SHA}" != "${EXPECTED_SHA}" ]]; then
+    echo "ERROR: SHA256 mismatch for PaperMC (expected ${EXPECTED_SHA}, got ${ACTUAL_SHA})" >&2
+    exit 1
+  fi
+  echo "SHA256 verified: ${ACTUAL_SHA}"
+else
+  echo "WARNING: No upstream SHA provided; computed: ${ACTUAL_SHA}"
+fi
+
+echo "✅ Update complete to version ${LATEST_VERSION} (build ${LATEST_BUILD})"
+E2
+chmod +x update.sh
+
 # Ensure minecraft owns newly created files
 chown -R minecraft:minecraft /opt/minecraft
 
-# Ensure screen runtime directory exists with correct ownership and mode
-# NOTE: In LXC, utmp group may not exist; fall back to root:root with 0777
-if getent group utmp >/dev/null 2>&1; then
-  install -d -m 0775 -o root -g utmp /run/screen || true
-  printf 'd /run/screen 0775 root utmp -\n' > /etc/tmpfiles.d/screen.conf
-else
-  install -d -m 0777 -o root -g root /run/screen || true
-  printf 'd /run/screen 0777 root root -\n' > /etc/tmpfiles.d/screen.conf
-fi
+# Ensure screen runtime directory exists with mode 0777 (required for non-root screen in LXC)
+install -d -m 0777 -o root -g root /run/screen || true
+chmod 0777 /run/screen || true
+printf 'd /run/screen 0777 root root -\n' > /etc/tmpfiles.d/screen.conf
 systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
 
 # Start server in screen session (consistent with VM script and README)

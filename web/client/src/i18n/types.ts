@@ -8,6 +8,7 @@ export interface TranslationSchema {
   nav: {
     overview: string;
     quickstart: string;
+    demos: string;
     features: string;
     architecture: string;
     techSpecs: string;
@@ -69,6 +70,31 @@ export interface TranslationSchema {
     };
     copyBtn: string;
     copiedBtn: string;
+  };
+  demos: {
+    kicker: string;
+    title: string;
+    subtitle: string;
+    tabs: {
+      verification: string;
+      usage: string;
+    };
+    verification: {
+      badge: string;
+      title: string;
+      desc: string;
+      bullet1: string;
+      bullet2: string;
+      bullet3: string;
+    };
+    usage: {
+      badge: string;
+      title: string;
+      desc: string;
+      bullet1: string;
+      bullet2: string;
+      bullet3: string;
+    };
   };
   features: {
     kicker: string;

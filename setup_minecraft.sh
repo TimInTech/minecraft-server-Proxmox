@@ -10,14 +10,21 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y screen wget curl jq unzip ca-certificates gnupg
 
 ensure_java() {
-  # Prefer OpenJDK 21; fallback to Amazon Corretto 21 via APT keyring.
-  if sudo apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return; fi
+  if command -v java >/dev/null 2>&1; then
+    local ver
+    ver=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d. -f1)
+    if [[ -n "$ver" ]] && (( ver >= 25 )); then
+      return 0
+    fi
+  fi
+  # Prefer OpenJDK 25 / 21; fallback to Amazon Corretto 25 via APT keyring.
+  if sudo apt-get install -y openjdk-25-jre-headless 2>/dev/null || sudo apt-get install -y openjdk-21-jre-headless 2>/dev/null; then return 0; fi
   # NOTE: Adding a vendor APT source; restrict with signed-by keyring.
   sudo install -d -m 0755 /usr/share/keyrings
-  curl -fsSL https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto.gpg
+  curl -fsSL https://apt.corretto.aws/corretto.key | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/corretto.gpg
   echo "deb [signed-by=/usr/share/keyrings/corretto.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list >/dev/null
   sudo apt-get update
-  sudo apt-get install -y java-21-amazon-corretto-jre || sudo apt-get install -y java-21-amazon-corretto-jdk
+  sudo apt-get install -y java-25-amazon-corretto-jdk || sudo apt-get install -y java-21-amazon-corretto-jdk
 }
 
 ensure_java
@@ -156,11 +163,10 @@ chmod +x update.sh
 
 sudo chown -R minecraft:minecraft /opt/minecraft
 
-# Ensure screen runtime directory exists with correct ownership and mode
-# NOTE: Required on Debian 11/12/13 so screen can create sockets.
-sudo install -d -m 0775 -o root -g utmp /run/screen || true
-# NOTE: Persist /run/screen via systemd-tmpfiles to survive reboots
-printf 'd /run/screen 0775 root utmp -\n' | sudo tee /etc/tmpfiles.d/screen.conf >/dev/null
+# Ensure screen runtime directory exists with mode 0777 (required for non-root screen sessions)
+sudo install -d -m 0777 -o root -g root /run/screen || true
+sudo chmod 0777 /run/screen || true
+printf 'd /run/screen 0777 root root -\n' | sudo tee /etc/tmpfiles.d/screen.conf >/dev/null
 sudo systemd-tmpfiles --create /etc/tmpfiles.d/screen.conf || true
 
 if command -v runuser >/dev/null 2>&1; then

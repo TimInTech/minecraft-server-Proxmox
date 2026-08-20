@@ -10,6 +10,7 @@ export const de: TranslationSchema = {
   nav: {
     overview: "Übersicht",
     quickstart: "Schnellstart",
+    demos: "Terminal-Demos",
     features: "Funktionen",
     architecture: "Architektur",
     techSpecs: "Prüfstand",
@@ -97,8 +98,34 @@ export const de: TranslationSchema = {
     copyBtn: "Befehl kopieren",
     copiedBtn: "In die Zwischenablage kopiert!",
   },
+  demos: {
+    kicker: "LIVE TERMINAL-DEMOS",
+    title: "Verifiziert im Live-Betrieb auf Proxmox VE",
+    subtitle:
+      "Sieh dir echte Live-Terminalaufnahmen an: Container-Verifikation, automatisierte Systemprüfungen und praktische Server-Administration nach der Installation.",
+    tabs: {
+      verification: "01 · Live-Container-Verifikation",
+      usage: "02 · Praxis-Server-Administration",
+    },
+    verification: {
+      badge: "LIVE CT-120 PRÜFSTAND",
+      title: "Automatisierte PaperMC LXC-Verifikation",
+      desc: "Echter Live-Verifikationsdurchlauf auf Proxmox VE (Container 120). Prüft Container-Netzwerk, systemd-Dienststatus, Fill-v3-API-Updater, Log-Stream und Port-25565-Erreichbarkeit im LAN.",
+      bullet1: "Container-IP & Bridge-Prüfung (192.168.178.125)",
+      bullet2: "Live PaperMC Fill-v3-API Update & SHA256-Integritätsprüfung",
+      bullet3: "Fehlerfreier systemd-Dienst & Port-25565-Verbindungstest",
+    },
+    usage: {
+      badge: "PRAXIS-ADMIN-WORKFLOW",
+      title: "Praktische Server-Administration in Aktion",
+      desc: "Zeigt typische administrative Routineaufgaben, die direkt auf dem Server ohne gestarteten Minecraft-Client ausgeführt werden.",
+      bullet1: "Dienst-Statusaudit & Prüfung der JVM-Speicherzuteilung",
+      bullet2: "Server-Eigenschaften (server.properties) & Operator/Whitelist-Status",
+      bullet3: "Sofortiges automatisiertes Backup der Welt & Konfigurationen",
+    },
+  },
   features: {
-    kicker: "02 / KERNFUNKTIONEN",
+    kicker: "03 / KERNFUNKTIONEN",
     title: "Entwickelt für Homelab-Zuverlässigkeit",
     subtitle:
       "Entstanden aus echter Homelab-Praxis — mit Fokus auf Stabilität, Sicherheit und minimalen Wartungsaufwand.",
@@ -136,7 +163,7 @@ export const de: TranslationSchema = {
     ],
   },
   architecture: {
-    kicker: "03 / ARCHITEKTUR",
+    kicker: "04 / ARCHITEKTUR",
     title: "VM vs. LXC Container im Vergleich",
     subtitle:
       "Wähle das Virtualisierungsmodell, das zu deiner Homelab-Hardware und deinen Anforderungen passt.",
@@ -169,7 +196,7 @@ export const de: TranslationSchema = {
     ],
   },
   techSpecs: {
-    kicker: "04 / TECHNISCHE PRÜFUNG",
+    kicker: "05 / TECHNISCHE PRÜFUNG",
     title: "Spezifikationen & Kompatibilität",
     subtitle:
       "Geprüft und verifiziert für aktuelle Proxmox VE Releases und Enterprise-Linux-Distributionen.",
@@ -195,7 +222,7 @@ export const de: TranslationSchema = {
       "Xms = floor(RAM_MB * 0.25)M · Xmx = min(floor(RAM_MB * 0.50), 16384)M · Automatisch abgestimmt mit Aikar-kompatiblen Flags für stabile Garbage Collection.",
   },
   sources: {
-    kicker: "05 / DOKUMENTATION",
+    kicker: "06 / DOKUMENTATION",
     title: "Vollständige Dokumentation & Anleitungen",
     subtitle:
       "Jedes Skript, jede Architekturentscheidung und jeder Troubleshooting-Schritt ist im Repository detailliert dokumentiert.",
