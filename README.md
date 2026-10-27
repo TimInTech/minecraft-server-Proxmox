@@ -89,7 +89,7 @@
 
 - Proxmox VE: 7.4+ / 8.x / 9.x
 - Guest OS: Debian 12/13 or Ubuntu 22.04 / 24.04
-- CPU/RAM: ≥2 vCPU, ≥2–4 GB RAM (Java), ≥1–2 GB (Bedrock)
+- CPU/RAM: ≥2 vCPU, 2–4 GB RAM (Java), 1–2 GB (Bedrock)
 - Storage: ≥10 GB SSD
 - Network: Bridged NIC (vmbr0), ports 25565/TCP and 19132/UDP
 
